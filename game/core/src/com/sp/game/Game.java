@@ -422,7 +422,8 @@ public class Game implements ApplicationListener {
 				}
 				//TO DO: CREATE PROJECTILE
 				else {
-
+					//System.out.println("Shot at " + touch.x + ", " + touch.y);
+					player.shoot();
 				}
 			}
 		}

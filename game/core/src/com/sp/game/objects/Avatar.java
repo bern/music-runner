@@ -18,7 +18,9 @@ public class Avatar extends Entity {
     private int collectibles = 0;
     private int lives = 5;
     private int ammo = 5;
-    private boolean reloading;
+
+    private ReloadThread reloadThread = new ReloadThread();      //used to monitor reloading state
+    private CooldownThread cooldownThread = new CooldownThread();
 
     public Avatar() {
         full = new Rectangle(0, 0, 128, 128);
@@ -28,7 +30,7 @@ public class Avatar extends Entity {
         top = new Rectangle(0, 112, 128, 16);
 
         sprite = new Sprite(TextureManager.avatar, 0, 0, 128, 128);
-        setPosition(0,0);
+        setPosition(0, 0);
         velocityY = 0;
     }
 
@@ -61,28 +63,38 @@ public class Avatar extends Entity {
     }
 
     public void shoot() {
-        if (!reloading) {
-            //game.shoot(); etc
-            ammo--;
+        if (!reloadThread.reloading) {
+            if (cooldownThread.ready) {
+                //game.shoot(); etc
+                cooldownThread = new CooldownThread();
+                cooldownThread.ready = false;
+                cooldownThread.start();
+                if (--ammo == 0) {
+                    reloadThread = new ReloadThread();
+                    reloadThread.reloading = true;
+                    reloadThread.start();
+                }
+            }
+
         }
 
-        if (!reloading && ammo ==0) {
+        //if (!reloadThread.reloading && ammo ==0) {
             //reload!
-            reloading = true;
-            new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(1500);
-                        reloading = false;
-                        ammo = 5;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }.run();
+          //  reloadThread.start();
+//            new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        Thread.sleep(1500);
+//                        reloading = false;
+//                        ammo = 5;
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }.run();
         }
-    }
+    //}
 
     public int getLives() {
         return lives;
@@ -94,5 +106,34 @@ public class Avatar extends Entity {
 
     public int getAmmo() {
         return ammo;
+    }
+
+    private class ReloadThread extends Thread {
+        public boolean reloading = false;
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            reloading = false;
+            ammo = 5;
+        }
+    }
+
+    private class CooldownThread extends Thread {
+        public boolean ready = true;
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            ready = true;
+        }
     }
 }
