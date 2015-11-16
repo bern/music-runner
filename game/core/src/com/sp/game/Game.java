@@ -23,13 +23,17 @@ import java.util.logging.FileHandler;
 
 public class Game implements ApplicationListener {
 
+	private static Game game;
+
 	//MAP OBJECTS
 	private OrthographicCamera camera;		//viewport
 	private SpriteBatch batch;				//collection of sprites
 	private Avatar player;					//our player
 	private ArrayList<GameObject> list = new ArrayList<GameObject>();		//game objects  such as enemies
+	private ArrayList<MusicNote> enemies = new ArrayList<MusicNote>();
 	private ArrayList<GameObject> foreground = new ArrayList<GameObject>();	//foreground objects that move with camera
 	private ArrayList<VolumeBar> background = new ArrayList<VolumeBar>();	//background objects that move slower than camera
+	private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
 
 	//IN GAME CONTROLS & ITEMS
 	private Rectangle leftButton, rightButton, jumpButton;	//mobile controles
@@ -54,6 +58,8 @@ public class Game implements ApplicationListener {
 
 	@Override
 	public void create () {
+
+		game = this;
 
 		//CREATE TEXTURE MANAGER
 		TextureManager.create();
@@ -117,9 +123,11 @@ public class Game implements ApplicationListener {
 						Integer.parseInt(tokens.nextToken())));
 			}
 			else if (type.equals("MusicNote")) {
-				list.add(new MusicNote(
+				MusicNote note = new MusicNote(
 						Integer.parseInt(tokens.nextToken()),
-						Integer.parseInt(tokens.nextToken())));
+						Integer.parseInt(tokens.nextToken()));
+				list.add(note);
+				enemies.add(note);
 			}
 			else if(type.equals("Collectible")) {
 				list.add(new Collectible (
@@ -272,6 +280,10 @@ public class Game implements ApplicationListener {
 			obj.draw(batch);
 		}
 
+		for (Projectile p: projectiles) {
+			p.draw(batch);
+		}
+
 		//draw mobile controls
 		spriteLeft.draw(batch);
 		spriteRight.draw(batch);
@@ -288,6 +300,9 @@ public class Game implements ApplicationListener {
 		//UPDATES
 		//handles physics and position
 		player.update(Gdx.graphics.getDeltaTime());
+		for (Projectile p: projectiles) {
+			p.update(Gdx.graphics.getDeltaTime());
+		}
 		Rectangle temp = new Rectangle(0, 0, 800, 10);
 
 		//this was for testing I believe - probably don't need
@@ -371,11 +386,26 @@ public class Game implements ApplicationListener {
 			}
 		}
 
+		//Check for projectile collisions.
+		for(Projectile p: projectiles) {
+			for (MusicNote mn: enemies) {
+				if (p.hits(mn.getHitBox()) > 0) {
+					deleteList.add(p);
+					deleteList.add(mn);
+				}
+			}
+		}
 		//any objects that have been "killed" or taken
 		while(!deleteList.isEmpty()) {
 			GameObject obj = deleteList.get(0);
 			if (obj instanceof Collectible) {
 				player.collect();
+			}
+			if (obj instanceof Projectile) {
+				projectiles.remove(obj);
+			}
+			if (obj instanceof MusicNote) {
+				enemies.remove(obj);
 			}
 			list.remove(obj);
 			deleteList.remove(0);
@@ -384,21 +414,21 @@ public class Game implements ApplicationListener {
 
 		//CONTROLS
 		//move left
-		if(Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+		if(Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
 			player.moveLeft(Gdx.graphics.getDeltaTime());
 			//paralax scrolling
 			for (VolumeBar v: background)
 				v.moveLeft(Gdx.graphics.getDeltaTime());
 		}
 		//move right
-		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
 			player.moveRight(Gdx.graphics.getDeltaTime());
 			//paralax scrolling
 			for (VolumeBar v: background)
 				v.moveRight(Gdx.graphics.getDeltaTime());
 		}
 		//jump
-		if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE))
+		if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyPressed(Input.Keys.W))
 			player.jump();
 
 		for (int i=0; i<5; ++i) {
@@ -423,13 +453,29 @@ public class Game implements ApplicationListener {
 				//TO DO: CREATE PROJECTILE
 				else {
 					//System.out.println("Shot at " + touch.x + ", " + touch.y);
-					player.shoot();
+					player.shoot(touch.getX(), touch.getY());
+//					projectiles.add(new Projectile(
+//							player.getHitBox().getX() + 110,
+//							player.getHitBox().getY() + 65,
+//							touch.getX(),
+//							touch.getY()
+//							));
 				}
 			}
 		}
 
 		updateCamera();
 
+
+	}
+
+	public void addProjectile(float x, float y) {
+		projectiles.add(new Projectile(
+				player.getHitBox().getX() + 110,
+				player.getHitBox().getY() + 65,
+				x,
+				y
+		));
 
 	}
 
@@ -443,5 +489,15 @@ public class Game implements ApplicationListener {
 
 	public Avatar getPlayer() {
 		return player;
+	}
+
+	public static Game getInstance() {
+		return game;
+	}
+
+	public synchronized void removeProjectile(Projectile projectile) {
+		if (projectiles.contains(projectile)) {
+			deleteList.add(projectile);
+		}
 	}
 }

@@ -62,10 +62,10 @@ public class Avatar extends Entity {
         }
     }
 
-    public void shoot() {
+    public void shoot(float x, float y) {
         if (!reloadThread.reloading) {
             if (cooldownThread.ready) {
-                //game.shoot(); etc
+                game.addProjectile(x, y);
                 cooldownThread = new CooldownThread();
                 cooldownThread.ready = false;
                 cooldownThread.start();
