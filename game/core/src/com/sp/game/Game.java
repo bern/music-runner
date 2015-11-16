@@ -23,24 +23,24 @@ import java.util.logging.FileHandler;
 public class Game implements ApplicationListener {
 
 	//MAP OBJECTS
-	private OrthographicCamera camera;
-	private SpriteBatch batch;
-	private Entity player;
-	private ArrayList<GameObject> list = new ArrayList<GameObject>();
-	private ArrayList<GameObject> foreground = new ArrayList<GameObject>();
-	private ArrayList<VolumeBar> background = new ArrayList<VolumeBar>();
+	private OrthographicCamera camera;		//viewport
+	private SpriteBatch batch;				//collection of sprites
+	private Avatar player;					//our player
+	private ArrayList<GameObject> list = new ArrayList<GameObject>();		//game objects  such as enemies
+	private ArrayList<GameObject> foreground = new ArrayList<GameObject>();	//foreground objects that move with camera
+	private ArrayList<VolumeBar> background = new ArrayList<VolumeBar>();	//background objects that move slower than camera
 
 	//IN GAME CONTROLS & ITEMS
-	private Rectangle leftButton, rightButton, jumpButton;
-	private Sprite spriteLeft, spriteRight, spriteJump;
-	private Texture buttonTexture;
+	private Rectangle leftButton, rightButton, jumpButton;	//mobile controles
+	private Sprite spriteLeft, spriteRight, spriteJump;		//sprites for mobile controls
+	private Texture buttonTexture;		//paints sprites to texture
 
 	//MAIN MENU ITEMS
 	private Rectangle mainMenuLogin, mainMenuStart, mainMenuQuit;
 	private Sprite mainMenuLoginSprite, mainMenuStartSprite, mainMenuQuitSprite;
 	private Texture mainMenuTexture;
 
-	private List<GameObject> deleteList = new ArrayList<GameObject>();
+	private List<GameObject> deleteList = new ArrayList<GameObject>();		//items queued to be deleted
 	private int gameState = 1; 	//1 = Main menu, 2 = In game, 3 = game finish, 4 = game over
 
 
@@ -56,7 +56,7 @@ public class Game implements ApplicationListener {
 		batch = new SpriteBatch();
 
 		//CONFIGURE AVATAR
-		player = new Avatar();
+		player = new Avatar(this);
 		player.setPosition(100, 200);
 
 		//CONFIGURE MOBILE CONTROLS
@@ -78,14 +78,18 @@ public class Game implements ApplicationListener {
 		mainMenuStartSprite = new Sprite(mainMenuTexture, 256, 0, 256, 128);
 		mainMenuQuitSprite = new Sprite(mainMenuTexture, 0, 128, 256, 128);
 
+		//set position of main menu buttons
 		mainMenuLoginSprite.setPosition(40, 150);
 		mainMenuStartSprite.setPosition(320, 150);
 		mainMenuQuitSprite.setPosition(600, 150);
 
+		//set "hitboxes" of main menu buttons
+		//note: rectangles support "overlap" function, used to power events with buttons
 		mainMenuLogin = new Rectangle(mainMenuLoginSprite.getX(), mainMenuLoginSprite.getY(), 256, 128);
 		mainMenuStart = new Rectangle(mainMenuStartSprite.getX(), mainMenuStartSprite.getY(), 256, 128);
 		mainMenuQuit = new Rectangle(mainMenuQuitSprite.getX(), mainMenuQuitSprite.getY(), 256, 128);
 
+		//LOAD LEVEL ALGORITHM
 		FileHandle file = Gdx.files.internal("levels/level2.txt");
 		StringTokenizer tokens = new StringTokenizer(file.readString());
 		while (tokens.hasMoreTokens()) {
@@ -125,7 +129,7 @@ public class Game implements ApplicationListener {
 //		list.add(new Platform(320,128));
 //		list.add(new MusicNote(400, 10));
 
-		updateCamera();
+		updateCamera();		//init camera to starting game location
 	}
 
 	@Override
@@ -135,6 +139,7 @@ public class Game implements ApplicationListener {
 
 	@Override
 	public void render () {
+		//Game screen 'logic'. Could/should be encapsulated in libGDX Screen objects
 		switch (gameState) {
 			case 1:
 				mainMenu();
@@ -143,10 +148,10 @@ public class Game implements ApplicationListener {
 				mainGame();
 				break;
 			case 3:
-				gameFinish();
+				gameFinish();	//to be implemented
 				break;
 			case 4:
-				gameOver();
+				gameOver();		//to be implemented
 				break;
 
 		}
@@ -169,6 +174,7 @@ public class Game implements ApplicationListener {
 	}
 
 	public void updateCamera() {
+		//mobile controls
 		leftButton.x = player.getHitBox().x - 380 + 350;
 		spriteLeft.setPosition(leftButton.x, 20);
 
@@ -178,75 +184,78 @@ public class Game implements ApplicationListener {
 		jumpButton.x = player.getHitBox().x + 312 + 350;
 		spriteJump.setPosition(jumpButton.x, 20);
 
+		//camera position
 		camera.position.x = player.getHitBox().x + 350;
 		camera.update();
 	}
 
 	public void mainMenu() {
 
+		//INIT MAIN MENU AND BUTTONS
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		//ALLOW DRAWING OF TEXTURES
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
-//		player.draw(batch);
-//		for (GameObject obj: list) {
-//			obj.draw(batch);
-//		}
-
+		//DRAW SPIRTES TO BATCH
 		mainMenuLoginSprite.draw(batch);
 		mainMenuStartSprite.draw(batch);
 		mainMenuQuitSprite.draw(batch);
 
-
 		batch.end();
 
+		//FOR POSITIONING REASONS
 		camera.position.x = 400;
 		camera.position.y = 240;
 
-
+		//CLICK HANDLER
 		if (Gdx.input.isTouched()) {
 			Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
 			camera.unproject(touchPos);
 			Rectangle touch = new Rectangle(touchPos.x -16, touchPos.y - 16, 32, 32);
 
 			if (touch.overlaps(mainMenuStart)) {
+				//start game
 				gameState = 2;
 			}
 			else if (touch.overlaps(mainMenuLogin)) {
-
+				//probably won't do anything here
 			}
 			else if (touch.overlaps(mainMenuQuit)) {
+				//exit application
 				Gdx.app.exit();
 			}
 		}
-		
-
-
-
 	}
 
 	public void mainGame() {
+		//set background to black
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+		//init camera and batch
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
+		//draw background
 		for (VolumeBar o: background) {
 			o.draw(batch);
 		}
 
+		//draw foreground
 		for(GameObject o: foreground) {
 			o.draw(batch);
 		}
 
+		//draw player and immediate objects
 		player.draw(batch);
 		for (GameObject obj: list) {
 			obj.draw(batch);
 		}
 
+		//draw mobile controls
 		spriteLeft.draw(batch);
 		spriteRight.draw(batch);
 		spriteJump.draw(batch);
@@ -254,13 +263,15 @@ public class Game implements ApplicationListener {
 		batch.end();
 
 		//UPDATES
-
+		//handles physics and position
 		player.update(Gdx.graphics.getDeltaTime());
 		Rectangle temp = new Rectangle(0, 0, 800, 10);
 
+		//this was for testing I believe - probably don't need
 		if (player.hits(temp) != -1)
 			player.action(1, 0, 10);
 
+		//physics logic
 		for(GameObject obj: list) {
 			switch (player.hits(obj.getHitBox())) {
 				case 1:
@@ -331,6 +342,7 @@ public class Game implements ApplicationListener {
 			}
 		}
 
+		//any objects that have been "killed" or taken
 		while(!deleteList.isEmpty()) {
 			list.remove(deleteList.get(0));
 			deleteList.remove(0);
@@ -338,18 +350,24 @@ public class Game implements ApplicationListener {
 
 
 		//CONTROLS
+		//move left
 		if(Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
 			player.moveLeft(Gdx.graphics.getDeltaTime());
+			//paralax scrolling
 			for (VolumeBar v: background)
 				v.moveLeft(Gdx.graphics.getDeltaTime());
 		}
+		//move right
 		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
 			player.moveRight(Gdx.graphics.getDeltaTime());
+			//paralax scrolling
 			for (VolumeBar v: background)
 				v.moveRight(Gdx.graphics.getDeltaTime());
 		}
+		//jump
 		if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE))
 			player.jump();
+
 		for (int i=0; i<5; ++i) {
 			if (Gdx.input.isTouched(i)) {
 				Vector3 touchPos = new Vector3(Gdx.input.getX(i), Gdx.input.getY(i), 0);
@@ -369,6 +387,10 @@ public class Game implements ApplicationListener {
 				if(touch.overlaps(jumpButton)) {
 					player.jump();
 				}
+				//TO DO: CREATE PROJECTILE
+				else {
+
+				}
 			}
 		}
 
@@ -378,10 +400,14 @@ public class Game implements ApplicationListener {
 	}
 
 	public void gameFinish() {
-
+		//TODO
 	}
 
 	public void gameOver() {
+		//TODO
+	}
 
+	public Avatar getPlayer() {
+		return player;
 	}
 }

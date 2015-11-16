@@ -18,6 +18,7 @@ public class DesktopLauncher {
 	}
 
 	public static void writeGame() {
+		//TO BE REFACORED ELSEWHERE
 		File file = new File("levels/level2.txt");
 		FileOutputStream os;
 		BufferedOutputStream out;
