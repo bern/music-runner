@@ -81,4 +81,16 @@ public class Avatar extends Entity {
             }.run();
         }
     }
+
+    public int getLives() {
+        return lives;
+    }
+
+    public int getCollectibles() {
+        return collectibles;
+    }
+
+    public int getAmmo() {
+        return ammo;
+    }
 }

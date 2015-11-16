@@ -17,27 +17,29 @@ public abstract class Entity extends GameObject implements Movable {
     protected float velocityY;
 
     public int hits(Rectangle r) {
+        //returns a status code based on which hitbox is hit
 
         if (left.overlaps(r)) {
+            //left collision?
             return 2;
         }
 
+        if (top.overlaps(r)) {
+            //top collision?
+            return 4;
+        }
+
         if (right.overlaps(r)) {
+            //right collision?
             return 3;
         }
 
         if (bottom.overlaps(r)) {
+            //bottom collision?
             return 1;
         }
 
-//        if (full.overlaps(r)) {
-//            return 1;
-//        }
-
-        if (top.overlaps(r)) {
-            return 4;
-        }
-
+        //no collision
         return -1;
     }
 

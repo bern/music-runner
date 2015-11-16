@@ -7,6 +7,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
@@ -43,6 +44,13 @@ public class Game implements ApplicationListener {
 	private List<GameObject> deleteList = new ArrayList<GameObject>();		//items queued to be deleted
 	private int gameState = 1; 	//1 = Main menu, 2 = In game, 3 = game finish, 4 = game over
 
+	//Game screen fonts
+	private BitmapFont welcome;
+	private BitmapFont lives;
+	private BitmapFont collectibles;
+	private BitmapFont ammo;
+	private float fontPos = 0;		//For font "following" avatar
+
 
 	@Override
 	public void create () {
@@ -71,6 +79,15 @@ public class Game implements ApplicationListener {
 		spriteLeft.setPosition(20, 20);
 		spriteRight.setPosition(120, 20);
 		spriteJump.setPosition(716, 20);
+
+		//CONFIGURE BITMAP FONTS
+		welcome = new BitmapFont(Gdx.files.internal("font/font.fnt"),
+				Gdx.files.internal("font/font.png"), false);
+		welcome.getData().setScale(1.2f);
+
+		lives = new BitmapFont(Gdx.files.internal("font/font.fnt"),
+				Gdx.files.internal("font/font.png"), false);
+		lives.getData().setScale(1);
 
 		//CONFIGURE MAIN MENU SPRITES
 		mainMenuTexture = new Texture(Gdx.files.internal("img/mainmenuitems.png"));
@@ -260,6 +277,12 @@ public class Game implements ApplicationListener {
 		spriteRight.draw(batch);
 		spriteJump.draw(batch);
 
+		welcome.draw(batch, "Welcome to Music Runner", 20, 350);
+		lives.draw(batch, "Lives: " + player.getLives(), player.getHitBox().getX() - 20, 450);
+		lives.draw(batch, "Coins: " + player.getCollectibles(), player.getHitBox().getX() + 280, 450);
+		lives.draw(batch, "Ammo: " + player.getAmmo(), player.getHitBox().getX() + 580, 450);
+
+
 		batch.end();
 
 		//UPDATES
@@ -344,7 +367,11 @@ public class Game implements ApplicationListener {
 
 		//any objects that have been "killed" or taken
 		while(!deleteList.isEmpty()) {
-			list.remove(deleteList.get(0));
+			GameObject obj = deleteList.get(0);
+			if (obj instanceof Collectible) {
+				player.collect();
+			}
+			list.remove(obj);
 			deleteList.remove(0);
 		}
 
