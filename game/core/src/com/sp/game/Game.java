@@ -297,21 +297,21 @@ public class Game implements ApplicationListener {
 		//physics logic
 		for(GameObject obj: list) {
 			switch (player.hits(obj.getHitBox())) {
-				case 1:
+				case 1:		//it hit the BOTTOM box
 					switch(obj.hitAction(1)) {
-						case 1:
+						case 1:		//a regular "landing", no effect other than positioning
 							player.action(1, 0, obj.getHitBox().y + obj.getHitBox().height);
 							break;
-						case 2:
-							player.setPosition(0, 400);
-							player.resetGravity();
+						case 2:		//player's bottom hit enemy- kill them!
+							deleteList.add(obj);
+							player.jump(200);
 							break;
-						case 3:
+						case 3:		//player hit collectible = add to delete list
 							deleteList.add(obj);
 							break;
 					}
 					break;
-				case 2:
+				case 2:		//it hit the LEFT box
 					switch(obj.hitAction(2)) {
 						case 1:
 							float distance = player.getHitBox().getX() - (obj.getHitBox().x + obj.getHitBox().width + 1);
@@ -321,17 +321,19 @@ public class Game implements ApplicationListener {
 								v.action(0, distance, 0);
 							}
 							break;
-						case 2:
-							player.setPosition(0, 400);
-							player.resetGravity();
+						case 2:		//our left his enemy- we lose a life
+							player.takeDamage();
+							deleteList.add(obj);
+							//player.setPosition(0, 400);
+							//player.resetGravity();
 							break;
-						case 3:
+						case 3:		//collect item
 							deleteList.add(obj);
 					}
 					break;
-				case 3:
+				case 3:		//it hit the RIGHT box
 					switch(obj.hitAction(3)) {
-						case 1:
+						case 1:		//side landing
 							float distance = player.getHitBox().getX() - (obj.getHitBox().x - player.getHitBox().width - 1);
 							player.action(3, obj.getHitBox().x - player.getHitBox().width - 1, 0);
 
@@ -339,25 +341,29 @@ public class Game implements ApplicationListener {
 								v.action(0, distance, 0);
 							}
 							break;
-						case 2:
-							player.setPosition(0, 400);
-							player.resetGravity();
+						case 2:		//our right hit enemy- we die
+							player.takeDamage();
+							deleteList.add(obj);
+							//player.setPosition(0, 400);
+							//player.resetGravity();
 							break;
-						case 3:
+						case 3:		//collect item
 							deleteList.add(obj);
 							break;
 					}
 					break;
-				case 4:
+				case 4: //it hit the TOP box
 					switch(obj.hitAction(4)) {
-						case 1:
+						case 1:		//our head hit object
 							player.action(4, 0, obj.getHitBox().y - player.getHitBox().height);
 							break;
-						case 2:
-							player.setPosition(0, 400);
-							player.resetGravity();
+						case 2:		//our head hit enemy- we die
+							player.takeDamage();
+							deleteList.add(obj);
+							//player.setPosition(0, 400);
+							//player.resetGravity();
 							break;
-						case 3:
+						case 3:		//collect item
 							deleteList.add(obj);
 							break;
 					}
@@ -431,7 +437,7 @@ public class Game implements ApplicationListener {
 	}
 
 	public void gameOver() {
-		//TODO
+		gameState = 1;
 	}
 
 	public Avatar getPlayer() {

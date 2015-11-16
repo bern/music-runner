@@ -19,11 +19,6 @@ public abstract class Entity extends GameObject implements Movable {
     public int hits(Rectangle r) {
         //returns a status code based on which hitbox is hit
 
-        if (left.overlaps(r)) {
-            //left collision?
-            return 2;
-        }
-
         if (top.overlaps(r)) {
             //top collision?
             return 4;
@@ -37,6 +32,11 @@ public abstract class Entity extends GameObject implements Movable {
         if (bottom.overlaps(r)) {
             //bottom collision?
             return 1;
+        }
+
+        if (left.overlaps(r)) {
+            //left collision?
+            return 2;
         }
 
         //no collision
@@ -100,6 +100,10 @@ public abstract class Entity extends GameObject implements Movable {
     public void jump() {
         if (velocityY == 0)
             velocityY = 700;
+    }
+
+    public void jump(float val) {
+        velocityY = val;
     }
 
     public Rectangle getHitBox() {

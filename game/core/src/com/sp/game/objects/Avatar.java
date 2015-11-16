@@ -55,7 +55,9 @@ public class Avatar extends Entity {
     }
 
     public void takeDamage() {
-        lives--;
+        if (--lives == 0) {
+            game.gameOver();
+        }
     }
 
     public void shoot() {
