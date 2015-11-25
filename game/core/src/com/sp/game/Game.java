@@ -3,6 +3,8 @@ package com.sp.game;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -13,13 +15,19 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.sp.game.objects.*;
+import com.sp.game.tools.Debug;
 import com.sp.game.tools.FramesLevelBuilder;
 import com.sp.game.tools.LevelBuilder;
 import com.sp.game.tools.Movable;
+import com.sp.game.tools.MusicOperator;
 import com.sp.game.tools.TextureManager;
+
+import matlabcontrol.MatlabConnectionException;
+import matlabcontrol.MatlabInvocationException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.logging.FileHandler;
 
@@ -58,6 +66,10 @@ public class Game implements ApplicationListener {
 	private float fontPos = 0;		//For font "following" avatar
 
 	private LevelBuilder builder;
+	private String gameFilePath;
+	private boolean firstRender = true;
+	
+	private MusicWaitThread thread;
 
 
 	@Override
@@ -115,42 +127,6 @@ public class Game implements ApplicationListener {
 		mainMenuLogin = new Rectangle(mainMenuLoginSprite.getX(), mainMenuLoginSprite.getY(), 256, 128);
 		mainMenuStart = new Rectangle(mainMenuStartSprite.getX(), mainMenuStartSprite.getY(), 256, 128);
 		mainMenuQuit = new Rectangle(mainMenuQuitSprite.getX(), mainMenuQuitSprite.getY(), 256, 128);
-
-		//LOAD LEVEL ALGORITHM
-		builder = new FramesLevelBuilder("gen/framesofinterest3.txt");
-		FileHandle file = Gdx.files.internal(builder.getWritePath());
-		StringTokenizer tokens = new StringTokenizer(file.readString());
-		while (tokens.hasMoreTokens()) {
-			String type = tokens.nextToken();
-			if (type.equals("Platform")) {
-				list.add(new Platform(
-						Integer.parseInt(tokens.nextToken()),
-						Integer.parseInt(tokens.nextToken())));
-			}
-			else if (type.equals("MusicNote")) {
-				MusicNote note = new MusicNote(
-						Integer.parseInt(tokens.nextToken()),
-						Integer.parseInt(tokens.nextToken()));
-				list.add(note);
-				enemies.add(note);
-			}
-			else if(type.equals("Collectible")) {
-				list.add(new Collectible (
-						Integer.parseInt(tokens.nextToken()),
-						Integer.parseInt(tokens.nextToken())));
-			}
-			else if (type.equals("Wave")) {
-				foreground.add(new Wave(
-						Integer.parseInt(tokens.nextToken()),
-						Integer.parseInt(tokens.nextToken())));
-			}
-			else if (type.equals("VolumeBar")) {
-				background.add(new VolumeBar(
-						Integer.parseInt(tokens.nextToken()),
-						Integer.parseInt(tokens.nextToken()),
-						Integer.parseInt(tokens.nextToken())));
-			}
-		}
 
 		updateCamera();		//init camera to starting game location
 	}
@@ -241,7 +217,28 @@ public class Game implements ApplicationListener {
 
 			if (touch.overlaps(mainMenuStart)) {
 				//start game
-				gameState = 2;
+				
+				// TODO: this needs to be rewritten
+				// builds a musicoperator object
+				// initializes with song of choice
+				// generates frames[] and num_frames[]
+				// when finished, plays song with game
+				MusicOperator test = new MusicOperator();
+				Scanner in = new Scanner(System.in);
+				System.out.print("Song to run: ");
+				String song = in.next();
+			    if(!(song.substring(song.length()-4,song.length()).equals(".wav"))) {
+			     	song = song+".wav";
+			    }
+				if (thread == null) {
+					thread = new MusicWaitThread(test, song);
+					thread.start();
+				}
+				
+				System.out.println(test.getDoneProcessing());
+				if (test.getDoneProcessing()) {
+					gameState = 2;
+				}
 			}
 			else if (touch.overlaps(mainMenuLogin)) {
 				//probably won't do anything here
@@ -249,6 +246,11 @@ public class Game implements ApplicationListener {
 			else if (touch.overlaps(mainMenuQuit)) {
 				//exit application
 				Gdx.app.exit();
+			}
+			if (thread != null) 
+				System.out.println(thread.isDone());
+			if (thread != null && thread.isDone()) {
+				gameState = 2;
 			}
 		}
 	}
@@ -273,7 +275,7 @@ public class Game implements ApplicationListener {
 		}
 
 		//draw player and immediate objects
-		player.draw(batch);
+		
 		for (GameObject obj: list) {
 			obj.draw(batch);
 		}
@@ -283,8 +285,10 @@ public class Game implements ApplicationListener {
 		}
 
 		//draw mobile controls
-		spriteLeft.draw(batch);
-		spriteRight.draw(batch);
+		if (Debug.DEBUG) {
+			spriteLeft.draw(batch);
+			spriteRight.draw(batch);
+		}
 		spriteJump.draw(batch);
 
 		welcome.draw(batch, "Welcome to Music Runner", 20, 350);
@@ -292,7 +296,7 @@ public class Game implements ApplicationListener {
 		lives.draw(batch, "Coins: " + player.getCollectibles(), player.getHitBox().getX() + 280, 450);
 		lives.draw(batch, "Ammo: " + player.getAmmo(), player.getHitBox().getX() + 580, 450);
 
-
+		player.draw(batch);
 		batch.end();
 
 		//UPDATES
@@ -417,14 +421,14 @@ public class Game implements ApplicationListener {
 
 		//CONTROLS
 		//move left
-		if(Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+		if(Debug.DEBUG && (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A))) {
 			player.moveLeft(Gdx.graphics.getDeltaTime());
 			//paralax scrolling
 			for (VolumeBar v: background)
 				v.moveLeft(Gdx.graphics.getDeltaTime());
 		}
 		//move right
-		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+		if(Debug.DEBUG && (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D))) {
 			player.moveRight(Gdx.graphics.getDeltaTime());
 			//paralax scrolling
 			for (VolumeBar v: background)
@@ -445,17 +449,19 @@ public class Game implements ApplicationListener {
 				Rectangle touch = new Rectangle(touchPos.x -16, touchPos.y - 16, 32, 32);
 
 				//MOBILE LEFT CONTROL
-				if(touch.overlaps(leftButton)) {
-					player.moveLeft(Gdx.graphics.getDeltaTime());
-					for (VolumeBar v: background)
-						v.moveLeft(Gdx.graphics.getDeltaTime());
-				}
-
-				//MOBILE RIGHT CONTROL
-				if(touch.overlaps(rightButton)) {
-					player.moveRight(Gdx.graphics.getDeltaTime());
-					for (VolumeBar v: background)
-						v.moveRight(Gdx.graphics.getDeltaTime());
+				if (Debug.DEBUG) {
+					if(touch.overlaps(leftButton)) {
+						player.moveLeft(Gdx.graphics.getDeltaTime());
+						for (VolumeBar v: background)
+							v.moveLeft(Gdx.graphics.getDeltaTime());
+					}
+	
+					//MOBILE RIGHT CONTROL
+					if(touch.overlaps(rightButton)) {
+						player.moveRight(Gdx.graphics.getDeltaTime());
+						for (VolumeBar v: background)
+							v.moveRight(Gdx.graphics.getDeltaTime());
+					}
 				}
 
 				//MOBILE JUMP CONTROL
@@ -469,12 +475,18 @@ public class Game implements ApplicationListener {
 				}
 			}
 		}
+		
+		if (!Debug.DEBUG) {
+			player.moveRight(Gdx.graphics.getDeltaTime());
+			for (VolumeBar v: background)
+				v.moveRight(Gdx.graphics.getDeltaTime());
+		}
 
 		updateCamera();
 
 
 	}
-
+	
 	public boolean addProjectile(float x, float y) {
 		//CHECK TO MAKE SURE PLAYER NOT FIRING BACKWARDS
 		if (x < (player.getHitBox().getX() + 110) )
@@ -506,10 +518,92 @@ public class Game implements ApplicationListener {
 	public static Game getInstance() {
 		return game;
 	}
+	
+	public void setGameFilePath(String gameFilePath) {
+		this.gameFilePath = gameFilePath;
+	}
 
 	public synchronized void removeProjectile(Projectile projectile) {
 		if (projectiles.contains(projectile)) {
 			deleteList.add(projectile);
 		}
+	}
+	
+	private void initLevel(double[] frames, double numFrames) {
+		//LOAD LEVEL ALGORITHM
+		//builder = new FramesLevelBuilder("gen/framesofinterest3.txt");
+		builder = new FramesLevelBuilder(frames, numFrames);
+		System.out.println("Write path: "+builder.getWritePath());
+		FileHandle file = Gdx.files.internal(builder.getWritePath());
+		StringTokenizer tokens = new StringTokenizer(file.readString());
+		while (tokens.hasMoreTokens()) {
+			String type = tokens.nextToken();
+			if (type.equals("Platform")) {
+				list.add(new Platform(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())));
+			}
+			else if (type.equals("MusicNote")) {
+				MusicNote note = new MusicNote(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken()));
+				list.add(note);
+				enemies.add(note);
+			}
+			else if(type.equals("Collectible")) {
+				list.add(new Collectible (
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())));
+			}
+			else if (type.equals("Wave")) {
+				foreground.add(new Wave(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())));
+			}
+			else if (type.equals("VolumeBar")) {
+				background.add(new VolumeBar(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())));
+			}
+		}
+	}
+	
+	private class MusicWaitThread extends Thread {
+		
+		private MusicOperator mo;
+		private String song;
+		
+		public MusicWaitThread(MusicOperator mo, String song) {
+			this.mo = mo;
+			this.song = song;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				mo.initSelect(song);
+				initLevel(mo.getFrames(), mo.getNumFrames());
+			} catch (MatlabConnectionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (MatlabInvocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			Sound sound = Gdx.audio.newSound(Gdx.files.internal(song));
+			sound.play();
+			Game.getInstance().setGameState(2);
+		}
+		
+		public boolean isDone() {
+			return mo.getDoneProcessing();
+		}
+		
+	}
+	
+	public void setGameState(int state) {
+		gameState = state;
 	}
 }

@@ -2,9 +2,11 @@ package com.sp.game.tools;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.sp.game.Game;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
@@ -16,23 +18,40 @@ import java.util.StringTokenizer;
 public class FramesLevelBuilder extends LevelBuilder {
 
     private StringTokenizer tokens;
+    private ArrayList<Integer> features;
+    private int lastFrame;
 
     public FramesLevelBuilder(String filepath) {
         super(filepath);
         this.setWritePath("levels/frames_level_out.txt");
+        FileHandle inputFile = Gdx.files.internal(this.getReadPath());
+        tokens = new StringTokenizer(inputFile.readString());
+
+        features = new ArrayList<Integer>();
+        lastFrame = Integer.parseInt(tokens.nextToken());
+        while (tokens.hasMoreTokens()) {
+            features.add(Integer.parseInt(tokens.nextToken()));
+        }
         generateLevel();
+    }
+    
+    public FramesLevelBuilder(double[] frames, double numFrames) {
+    	super("levels/matlab_level.txt");
+    	System.out.println("FRAMES: "+numFrames);
+    	System.out.println("FIRST FRAME: "+frames[0]);
+    	Integer[] int_features = new Integer[frames.length];
+    	for (int i=0; i < frames.length; ++i) {
+    		int_features[i] = (int)frames[i];
+    	}
+    	features = new ArrayList<Integer>(Arrays.asList(int_features));
+    	this.setWritePath("levels/matlab_level.txt");
+    	lastFrame = (int)numFrames;
+    	generateLevel();
     }
 
     @Override
     protected void generateLevel() {
-        FileHandle inputFile = Gdx.files.internal(this.getReadPath());
-        tokens = new StringTokenizer(inputFile.readString());
-
-        ArrayList<Integer> features = new ArrayList<Integer>();
-        int lastFrame = Integer.parseInt(tokens.nextToken());
-        while (tokens.hasMoreTokens()) {
-            features.add(Integer.parseInt(tokens.nextToken()));
-        }
+    
 
         File file = new File(getWritePath());
         FileOutputStream os;

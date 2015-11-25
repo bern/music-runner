@@ -17,7 +17,7 @@ public class Avatar extends Entity {
     private Game game;
 
     private int collectibles = 0;
-    private int lives = 5;
+    private int lives = 500000;
     private int ammo = 5;
 
     private ReloadThread reloadThread = new ReloadThread();      //used to monitor reloading state
