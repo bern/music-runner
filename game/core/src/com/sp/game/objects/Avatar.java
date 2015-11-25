@@ -20,7 +20,7 @@ public class Avatar extends Entity {
     private int ammo = 5;
 
     private ReloadThread reloadThread = new ReloadThread();      //used to monitor reloading state
-    private CooldownThread cooldownThread = new CooldownThread();
+    private CoolDownThread cooldownThread = new CoolDownThread();
 
     public Avatar() {
         full = new Rectangle(0, 0, 128, 128);
@@ -65,14 +65,15 @@ public class Avatar extends Entity {
     public void shoot(float x, float y) {
         if (!reloadThread.reloading) {
             if (cooldownThread.ready) {
-                game.addProjectile(x, y);
-                cooldownThread = new CooldownThread();
-                cooldownThread.ready = false;
-                cooldownThread.start();
-                if (--ammo == 0) {
-                    reloadThread = new ReloadThread();
-                    reloadThread.reloading = true;
-                    reloadThread.start();
+                if (game.addProjectile(x,y)) {
+                    cooldownThread = new CoolDownThread();
+                    cooldownThread.ready = false;
+                    cooldownThread.start();
+                    if (--ammo == 0) {
+                        reloadThread = new ReloadThread();
+                        reloadThread.reloading = true;
+                        reloadThread.start();
+                    }
                 }
             }
 
@@ -123,7 +124,7 @@ public class Avatar extends Entity {
         }
     }
 
-    private class CooldownThread extends Thread {
+    private class CoolDownThread extends Thread {
         public boolean ready = true;
 
         @Override

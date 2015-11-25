@@ -469,7 +469,9 @@ public class Game implements ApplicationListener {
 
 	}
 
-	public void addProjectile(float x, float y) {
+	public boolean addProjectile(float x, float y) {
+		if (x < (player.getHitBox().getX() + 110) )
+			return false;
 		projectiles.add(new Projectile(
 				player.getHitBox().getX() + 110,
 				player.getHitBox().getY() + 65,
@@ -477,6 +479,7 @@ public class Game implements ApplicationListener {
 				y
 		));
 
+		return true;
 	}
 
 	public void gameFinish() {
