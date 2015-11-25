@@ -147,19 +147,12 @@ public class Game implements ApplicationListener {
 			}
 		}
 
-//		list.add(new Platform(0, 0));
-//		list.add(new Platform(64,0));
-//		list.add(new Platform(128,0));
-//		list.add(new Platform(256,128));
-//		list.add(new Platform(320,128));
-//		list.add(new MusicNote(400, 10));
-
 		updateCamera();		//init camera to starting game location
 	}
 
 	@Override
 	public void resize(int width, int height) {
-
+		//NO NEED TO OVERRIDE - FIXED GAME WINDOW
 	}
 
 	@Override
@@ -433,33 +426,33 @@ public class Game implements ApplicationListener {
 
 		for (int i=0; i<5; ++i) {
 			if (Gdx.input.isTouched(i)) {
+				//HANDLE A MOUSE CLICK/TAP ON THE SCREEN
 				Vector3 touchPos = new Vector3(Gdx.input.getX(i), Gdx.input.getY(i), 0);
 				camera.unproject(touchPos);
 				Rectangle touch = new Rectangle(touchPos.x -16, touchPos.y - 16, 32, 32);
 
+				//MOBILE LEFT CONTROL
 				if(touch.overlaps(leftButton)) {
 					player.moveLeft(Gdx.graphics.getDeltaTime());
 					for (VolumeBar v: background)
 						v.moveLeft(Gdx.graphics.getDeltaTime());
 				}
+
+				//MOBILE RIGHT CONTROL
 				if(touch.overlaps(rightButton)) {
 					player.moveRight(Gdx.graphics.getDeltaTime());
 					for (VolumeBar v: background)
 						v.moveRight(Gdx.graphics.getDeltaTime());
 				}
+
+				//MOBILE JUMP CONTROL
 				if(touch.overlaps(jumpButton)) {
 					player.jump();
 				}
-				//TO DO: CREATE PROJECTILE
+
+				//CREATE PROJECTILE
 				else {
-					//System.out.println("Shot at " + touch.x + ", " + touch.y);
 					player.shoot(touch.getX(), touch.getY());
-//					projectiles.add(new Projectile(
-//							player.getHitBox().getX() + 110,
-//							player.getHitBox().getY() + 65,
-//							touch.getX(),
-//							touch.getY()
-//							));
 				}
 			}
 		}
@@ -470,8 +463,11 @@ public class Game implements ApplicationListener {
 	}
 
 	public boolean addProjectile(float x, float y) {
+		//CHECK TO MAKE SURE PLAYER NOT FIRING BACKWARDS
 		if (x < (player.getHitBox().getX() + 110) )
 			return false;
+
+		//ONCE SUCCESSFUL, SEND PROJECTILE TO THE MAP
 		projectiles.add(new Projectile(
 				player.getHitBox().getX() + 110,
 				player.getHitBox().getY() + 65,
