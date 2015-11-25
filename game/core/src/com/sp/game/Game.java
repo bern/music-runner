@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.sp.game.objects.*;
+import com.sp.game.tools.FramesLevelBuilder;
+import com.sp.game.tools.LevelBuilder;
 import com.sp.game.tools.Movable;
 import com.sp.game.tools.TextureManager;
 
@@ -54,6 +56,8 @@ public class Game implements ApplicationListener {
 	private BitmapFont collectibles;
 	private BitmapFont ammo;
 	private float fontPos = 0;		//For font "following" avatar
+
+	private LevelBuilder builder;
 
 
 	@Override
@@ -113,7 +117,8 @@ public class Game implements ApplicationListener {
 		mainMenuQuit = new Rectangle(mainMenuQuitSprite.getX(), mainMenuQuitSprite.getY(), 256, 128);
 
 		//LOAD LEVEL ALGORITHM
-		FileHandle file = Gdx.files.internal("levels/level2.txt");
+		builder = new FramesLevelBuilder("gen/framesofinterest3.txt");
+		FileHandle file = Gdx.files.internal(builder.getWritePath());
 		StringTokenizer tokens = new StringTokenizer(file.readString());
 		while (tokens.hasMoreTokens()) {
 			String type = tokens.nextToken();
