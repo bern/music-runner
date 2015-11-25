@@ -16,16 +16,15 @@ import matlabcontrol.*;
 
 public class MusicOperator {
 
-	public static double[] frames;
-	public static int counter;
-	public static double prob = 0;
-	public static double num_frames = 0;
+	private double[] frames;
+	private double numFrames = 0;
+	private boolean doneProcessing = false;
 	
 	private static MatlabProxyFactory factory = null;
 	
 	public MusicOperator() {}
 	
-	public static void initSelect(String song) 
+	public void initSelect(String song) 
 		throws MatlabConnectionException, MatlabInvocationException
 	{		
 		String file = "../../../java-matlab-test/src/"+song;
@@ -37,8 +36,6 @@ public class MusicOperator {
 	    	factory = new MatlabProxyFactory();
 	    
 	    MatlabProxy proxy = factory.getProxy();
-
-	    counter = 0;
 	    
 	    //Set a variable, add to it, retrieve it, and print the result
 	    proxy.setVariable("a", 3);
@@ -49,24 +46,6 @@ public class MusicOperator {
 	    proxy.setVariable("var4", -1);
 	    
 	    System.out.println(file);
-	    
-	    difficulty = difficulty.toLowerCase();
-	    
-	    if(difficulty.equals("easy")) {
-	    	prob = .05;
-	    }
-	    else if(difficulty.equals("medium")) {
-	    	prob = .15;
-	    }
-	    else if(difficulty.equals("hard")) {
-	    	prob = .3;
-	    }
-	    else if(difficulty.equals("nightmare")) {
-	    	prob = .6;
-	    }
-	    else if(difficulty.equals("dave")) {
-	    	prob = 1;
-	    }
 	    
 	    StringBuilder filename = new StringBuilder();
 	    filename.append("'");
@@ -121,9 +100,22 @@ public class MusicOperator {
 	    
 	    frames = ((double[]) proxy.getVariable("loc_cancelled_trimmed"));
 	    double[] temp_num_frames_arr = ((double[]) proxy.getVariable("num_frames"));
-	    num_frames = temp_num_frames_arr[0];
-	    
+	    numFrames = temp_num_frames_arr[0];
+
 	    //Disconnect the proxy from MATLAB
 	    proxy.disconnect();
+	    doneProcessing = true;
+	}
+	
+	public boolean getDoneProcessing() {
+		return doneProcessing;
+	}
+	
+	public double[] getFrames() {
+		return frames;
+	}
+	
+	public double getNumFrames() {
+		return numFrames;
 	}
 }
