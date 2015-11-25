@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 import com.sp.game.Game;
+import com.sp.game.tools.DifficultyUtility;
 import com.sp.game.tools.TextureManager;
 
 /**
@@ -53,7 +54,9 @@ public class Avatar extends Entity {
     }
 
     public void collect() {
-        collectibles++;
+        if (++collectibles % DifficultyUtility.MUSHROOM_EASY == 0) {
+            lives++;
+        }
     }
 
     public void takeDamage() {
@@ -70,32 +73,19 @@ public class Avatar extends Entity {
                     cooldownThread.ready = false;
                     cooldownThread.start();
                     if (--ammo == 0) {
-                        reloadThread = new ReloadThread();
-                        reloadThread.reloading = true;
-                        reloadThread.start();
+                        reload();
                     }
                 }
             }
 
         }
+    }
 
-        //if (!reloadThread.reloading && ammo ==0) {
-            //reload!
-          //  reloadThread.start();
-//            new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        Thread.sleep(1500);
-//                        reloading = false;
-//                        ammo = 5;
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }.run();
-        }
-    //}
+    public void reload() {
+        reloadThread = new ReloadThread();
+        reloadThread.reloading = true;
+        reloadThread.start();
+    }
 
     public int getLives() {
         return lives;

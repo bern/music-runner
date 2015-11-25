@@ -309,6 +309,7 @@ public class Game implements ApplicationListener {
 
 		//physics logic
 		for(GameObject obj: list) {
+			boolean stomped = false;
 			switch (player.hits(obj.getHitBox())) {
 				case 1:		//it hit the BOTTOM box
 					switch(obj.hitAction(1)) {
@@ -318,6 +319,7 @@ public class Game implements ApplicationListener {
 						case 2:		//player's bottom hit enemy- kill them!
 							deleteList.add(obj);
 							player.jump(200);
+							stomped = true;
 							break;
 						case 3:		//player hit collectible = add to delete list
 							deleteList.add(obj);
@@ -382,6 +384,8 @@ public class Game implements ApplicationListener {
 					}
 					break;
 			}
+			if (stomped) break;
+			else continue;
 		}
 
 		//Check for projectile collisions.
@@ -390,6 +394,7 @@ public class Game implements ApplicationListener {
 				if (p.hits(mn.getHitBox()) > 0) {
 					deleteList.add(p);
 					deleteList.add(mn);
+					break;
 				}
 			}
 		}
@@ -428,6 +433,9 @@ public class Game implements ApplicationListener {
 		//jump
 		if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyPressed(Input.Keys.W))
 			player.jump();
+
+		if (Gdx.input.isKeyJustPressed(Input.Keys.R))
+			player.reload();
 
 		for (int i=0; i<5; ++i) {
 			if (Gdx.input.isTouched(i)) {
