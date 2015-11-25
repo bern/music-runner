@@ -3,6 +3,8 @@ package com.sp.game;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -14,10 +16,12 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.sp.game.objects.*;
 import com.sp.game.tools.Movable;
+import com.sp.game.tools.MusicOperator;
 import com.sp.game.tools.TextureManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.logging.FileHandler;
 
@@ -243,6 +247,26 @@ public class Game implements ApplicationListener {
 
 			if (touch.overlaps(mainMenuStart)) {
 				//start game
+				
+				// TODO: this needs to be rewritten
+				// builds a musicoperator object
+				// initializes with song of choice
+				// generates frames[] and num_frames[]
+				// when finished, plays song with game
+				MusicOperator test = new MusicOperator();
+				Scanner in = new Scanner(System.in);
+				System.out.print("Song to run: ");
+				String song = in.next();
+			    if(!(song.substring(song.length()-4,song.length()).equals(".wav"))) {
+			    	song = song+".wav";
+			    }
+				try {
+					test.initSelect(song);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				Music sound = Gdx.audio.newMusic(Gdx.files.internal(song));
+				sound.play();
 				gameState = 2;
 			}
 			else if (touch.overlaps(mainMenuLogin)) {
@@ -275,7 +299,7 @@ public class Game implements ApplicationListener {
 		}
 
 		//draw player and immediate objects
-		player.draw(batch);
+		
 		for (GameObject obj: list) {
 			obj.draw(batch);
 		}
@@ -294,7 +318,7 @@ public class Game implements ApplicationListener {
 		lives.draw(batch, "Coins: " + player.getCollectibles(), player.getHitBox().getX() + 280, 450);
 		lives.draw(batch, "Ammo: " + player.getAmmo(), player.getHitBox().getX() + 580, 450);
 
-
+		player.draw(batch);
 		batch.end();
 
 		//UPDATES
@@ -468,7 +492,7 @@ public class Game implements ApplicationListener {
 
 
 	}
-
+	
 	public boolean addProjectile(float x, float y) {
 		if (x < (player.getHitBox().getX() + 110) )
 			return false;
