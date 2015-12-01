@@ -33,26 +33,7 @@ public class MusicOperator {
 		}catch(Exception e){}*/
 		
 		String s = null;
-		numFrames = -1;
-		try {
-			Process p = Runtime.getRuntime().exec("python SongLength.py");
-			BufferedReader stdInput = new BufferedReader(new
-                 InputStreamReader(p.getInputStream()));
- 
-            BufferedReader stdError = new BufferedReader(new
-                 InputStreamReader(p.getErrorStream()));
- 
-            // read the output from the command
-            
-           while ((s = stdInput.readLine()) != null) {
-                numFrames = Double.parseDouble(s);
-            }
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("Got song length as "+numFrames+"!");
-		
+		numFrames = -1;		
 		ArrayList<Double> frameData = new ArrayList<Double>();
 		ArrayList<Integer> frameDensity = new ArrayList<Integer>();
 		
@@ -66,7 +47,10 @@ public class MusicOperator {
  
             // read the output from the command
             while ((s = stdInput.readLine()) != null) {
-                if(frameData.size() == frameDensity.size()) {
+            	if(numFrames == -1) {
+            		numFrames = Double.parseDouble(s);
+            	}
+            	else if(frameData.size() == frameDensity.size()) {
                 	frameData.add(Double.parseDouble(s));
                 }
                 else {
@@ -83,6 +67,10 @@ public class MusicOperator {
 		}
 		
 		System.out.println("Got frame data!");
+		
+		for(int i = 0; i < 30; i++) {
+			System.out.print(frames[i]+" ");
+		}
 		
 		doneProcessing = true;
 		

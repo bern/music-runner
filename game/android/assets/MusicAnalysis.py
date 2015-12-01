@@ -6,15 +6,22 @@ def analyze():
 
 	numFrames = len(data)
 
+	print(numFrames);
+
 	dataToAnalyze = abs(data[:,0])
 
 	std = np.std(dataToAnalyze)
 
+	#print(std)
+
 	frameVec = []
+	featureVal = []
 	densityVec = []
 
 	thousandMark = -1
 	thousandDensity = -1
+
+	#print(std)
 
 	for x in range(0, len(dataToAnalyze)):
 		if(dataToAnalyze[x] >= (std*3)):
@@ -23,15 +30,19 @@ def analyze():
 					densityVec.append(thousandDensity)
 				thousandMark = x;
 				frameVec.append(x)
+				featureVal.append(dataToAnalyze[x])
 				thousandDensity = 0
 			elif (x <= (thousandMark + 1000)):
 				thousandDensity += 1
 		if(x % np.floor(len(dataToAnalyze)/10) == 0):
 			percentComplete = ((x/np.floor(len(dataToAnalyze)/10))*10)
 			#print(percentComplete)
+	if(len(densityVec) < len(frameVec)):
+		densityVec.append(thousandDensity)
 
-	for x in range(0, len(data)):
+	for x in range(0, len(frameVec)-1):
 	    print(frameVec[x])
+	    #print(featureVal[x])
 	    print(densityVec[x])
 
 	return numFrames
