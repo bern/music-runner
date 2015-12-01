@@ -2,6 +2,7 @@ package com.sp.game.tools;
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.sound.sampled.LineEvent.Type;
@@ -12,22 +13,91 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.SwingUtilities;
 
-import matlabcontrol.*;
-
 public class MusicOperator {
 
 	private double[] frames;
 	private double numFrames = 0;
 	private boolean doneProcessing = false;
 	
-	private static MatlabProxyFactory factory = null;
-	
 	public MusicOperator() {}
 	
 	public void initSelect(String song) 
-		throws MatlabConnectionException, MatlabInvocationException
+		//throws MatlabConnectionException, MatlabInvocationException
 	{		
-		String file = "../../../java-matlab-test/src/"+song;
+		/*System.out.print(System.getProperty("user.dir"));
+		
+		PythonInterpreter interpreter = new PythonInterpreter();
+		interpreter.exec("import sys\nimport numpy as np\nimport scipy.io.wavfile\n");
+		// execute a function that takes a string and returns a string
+		PyObject someFunc = interpreter.get("analyze");
+		PyObject result = someFunc.__call__();
+		String realResult = (String) result.__tojava__(String.class);
+		
+		System.out.println("realResult");
+		
+		JEP jep = new JEP();
+		    jep.eval("from java.lang import System");
+		    jep.eval("s = 'Hello World'");
+		    jep.eval("System.out.println(s)");
+		    jep.eval("print(s)");
+		    jep.eval("print(s[1:-1])");
+		}catch(Exception e){}*/
+		
+		String s = null;
+		numFrames = -1;
+		try {
+			Process p = Runtime.getRuntime().exec("python SongLength.py");
+			BufferedReader stdInput = new BufferedReader(new
+                 InputStreamReader(p.getInputStream()));
+ 
+            BufferedReader stdError = new BufferedReader(new
+                 InputStreamReader(p.getErrorStream()));
+ 
+            // read the output from the command
+            
+           while ((s = stdInput.readLine()) != null) {
+                numFrames = Double.parseDouble(s);
+            }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Got song length as "+numFrames+"!");
+		
+		ArrayList<Double> frameData = new ArrayList<Double>();
+		ArrayList<Integer> frameDensity = new ArrayList<Integer>();
+		
+		try {
+			Process p = Runtime.getRuntime().exec("python MusicAnalysis.py");
+			BufferedReader stdInput = new BufferedReader(new
+                 InputStreamReader(p.getInputStream()));
+ 
+            BufferedReader stdError = new BufferedReader(new
+                 InputStreamReader(p.getErrorStream()));
+ 
+            // read the output from the command
+            while ((s = stdInput.readLine()) != null) {
+                if(frameData.size() == frameDensity.size()) {
+                	frameData.add(Double.parseDouble(s));
+                }
+                else {
+                	frameDensity.add(Integer.parseInt(s));
+                }
+            }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		frames = new double[frameData.size()];
+		for(int i = 0; i < frameData.size(); i++) {
+			frames[i] = frameData.get(i);
+		}
+		
+		System.out.println("Got frame data!");
+		
+		doneProcessing = true;
+		
+		/*String file = "../../../java-matlab-test/src/"+song;
 		String difficulty = "nightmare";
 		//JFileChooser temp = new JFileChooser("../../../../../../java-matlab-test/src");
 		
@@ -104,7 +174,7 @@ public class MusicOperator {
 
 	    //Disconnect the proxy from MATLAB
 	    proxy.disconnect();
-	    doneProcessing = true;
+	    doneProcessing = true;*/
 	}
 	
 	public boolean getDoneProcessing() {

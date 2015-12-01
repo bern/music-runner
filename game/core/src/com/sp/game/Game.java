@@ -22,9 +22,6 @@ import com.sp.game.tools.Movable;
 import com.sp.game.tools.MusicOperator;
 import com.sp.game.tools.TextureManager;
 
-import matlabcontrol.MatlabConnectionException;
-import matlabcontrol.MatlabInvocationException;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -69,7 +66,7 @@ public class Game implements ApplicationListener {
 	private String gameFilePath;
 	private boolean firstRender = true;
 	
-	private MusicWaitThread thread;
+	private MusicWaitThread thread = null;
 
 
 	@Override
@@ -215,6 +212,16 @@ public class Game implements ApplicationListener {
 			camera.unproject(touchPos);
 			Rectangle touch = new Rectangle(touchPos.x -16, touchPos.y - 16, 32, 32);
 
+/*
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ */
+			
 			if (touch.overlaps(mainMenuStart)) {
 				//start game
 				
@@ -224,21 +231,29 @@ public class Game implements ApplicationListener {
 				// generates frames[] and num_frames[]
 				// when finished, plays song with game
 				MusicOperator test = new MusicOperator();
-				Scanner in = new Scanner(System.in);
+				/*Scanner in = new Scanner(System.in);
 				System.out.print("Song to run: ");
 				String song = in.next();
 			    if(!(song.substring(song.length()-4,song.length()).equals(".wav"))) {
 			     	song = song+".wav";
-			    }
+			    }*/
 				if (thread == null) {
-					thread = new MusicWaitThread(test, song);
+					System.out.println("Hey there "+test.getNumFrames());
+					thread = new MusicWaitThread(test, "test3.wav");
 					thread.start();
 				}
 				
-				System.out.println(test.getDoneProcessing());
-				if (test.getDoneProcessing()) {
-					gameState = 2;
-				}
+				
+/*
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ * **********************************************************************************
+ */				
+
 			}
 			else if (touch.overlaps(mainMenuLogin)) {
 				//probably won't do anything here
@@ -249,9 +264,6 @@ public class Game implements ApplicationListener {
 			}
 			if (thread != null) 
 				System.out.println(thread.isDone());
-			if (thread != null && thread.isDone()) {
-				gameState = 2;
-			}
 		}
 	}
 
@@ -529,9 +541,11 @@ public class Game implements ApplicationListener {
 		}
 	}
 	
-	private void initLevel(double[] frames, double numFrames) {
+	private void initLevel(MusicOperator mo, double[] frames, double numFrames) {
 		//LOAD LEVEL ALGORITHM
 		//builder = new FramesLevelBuilder("gen/framesofinterest3.txt");
+		System.out.println("LALALALA: "+numFrames);
+		System.out.println(mo.getNumFrames());
 		builder = new FramesLevelBuilder(frames, numFrames);
 		System.out.println("Write path: "+builder.getWritePath());
 		FileHandle file = Gdx.files.internal(builder.getWritePath());
@@ -583,17 +597,18 @@ public class Game implements ApplicationListener {
 		public void run() {
 			try {
 				mo.initSelect(song);
-				initLevel(mo.getFrames(), mo.getNumFrames());
-			} catch (MatlabConnectionException e) {
+				initLevel(mo, mo.getFrames(), mo.getNumFrames());
+			} catch (Exception e) {//MatlabConnectionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (MatlabInvocationException e) {
+			} /*catch (//MatlabInvocationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-			
+			}*/
+			System.out.println("HEY");
 			Sound sound = Gdx.audio.newSound(Gdx.files.internal(song));
 			sound.play();
+			
 			Game.getInstance().setGameState(2);
 		}
 		
