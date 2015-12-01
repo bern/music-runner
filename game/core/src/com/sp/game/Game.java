@@ -47,7 +47,9 @@ public class Game implements ApplicationListener {
 
 	//MAIN MENU ITEMS
 	private Rectangle mainMenuLogin, mainMenuStart, mainMenuQuit;
+	private Rectangle mainMenuRun, mainMenuSongManager, mainMenuExit;
 	private Sprite mainMenuLoginSprite, mainMenuStartSprite, mainMenuQuitSprite;
+	private Sprite mainMenuRunSprite, mainMenuSongManagerSprite, mainMenuExitSprite, mainMenuTitleSprite;
 	private Texture mainMenuTexture;
 
 	private List<GameObject> deleteList = new ArrayList<GameObject>();		//items queued to be deleted
@@ -63,6 +65,8 @@ public class Game implements ApplicationListener {
 	private LevelBuilder builder;
 	private String gameFilePath;
 	private boolean firstRender = true;
+	
+	private Sound mainMenuSound;
 	
 	private MusicWaitThread thread = null;
 
@@ -106,7 +110,7 @@ public class Game implements ApplicationListener {
 		lives.getData().setScale(1);
 
 		//CONFIGURE MAIN MENU SPRITES
-		mainMenuTexture = new Texture(Gdx.files.internal("img/mainmenuitems.png"));
+		/*mainMenuTexture = new Texture(Gdx.files.internal("img/mainmenuitems.png"));
 		mainMenuLoginSprite = new Sprite(mainMenuTexture, 0, 0, 256, 128);
 		mainMenuStartSprite = new Sprite(mainMenuTexture, 256, 0, 256, 128);
 		mainMenuQuitSprite = new Sprite(mainMenuTexture, 0, 128, 256, 128);
@@ -120,8 +124,26 @@ public class Game implements ApplicationListener {
 		//note: rectangles support "overlap" function, used to power events with buttons
 		mainMenuLogin = new Rectangle(mainMenuLoginSprite.getX(), mainMenuLoginSprite.getY(), 256, 128);
 		mainMenuStart = new Rectangle(mainMenuStartSprite.getX(), mainMenuStartSprite.getY(), 256, 128);
-		mainMenuQuit = new Rectangle(mainMenuQuitSprite.getX(), mainMenuQuitSprite.getY(), 256, 128);
+		mainMenuQuit = new Rectangle(mainMenuQuitSprite.getX(), mainMenuQuitSprite.getY(), 256, 128);*/
+		
+		mainMenuTexture = new Texture(Gdx.files.internal("img/mainmenuicons.png"));
+		mainMenuRunSprite = new Sprite(mainMenuTexture, 22, 344, 135, 50);
+		mainMenuSongManagerSprite = new Sprite(mainMenuTexture, 23, 409, 355, 55);
+		mainMenuExitSprite = new Sprite(mainMenuTexture, 23, 478, 130, 49);
+		mainMenuTitleSprite = new Sprite(mainMenuTexture, 136, 30, 753, 165);
+		
+		mainMenuRunSprite.setPosition(-365, -80);
+		mainMenuSongManagerSprite.setPosition(-365, -145);
+		mainMenuExitSprite.setPosition(-365, -200);
+		mainMenuTitleSprite.setPosition(-365, 50);
+		
+		mainMenuRun = new Rectangle(mainMenuRunSprite.getX(), mainMenuRunSprite.getY(), 135, 50);
+		mainMenuSongManager = new Rectangle(mainMenuSongManagerSprite.getX(), mainMenuSongManagerSprite.getY(), 355, 55);
+		mainMenuExit = new Rectangle(mainMenuExitSprite.getX(), mainMenuExitSprite.getY(), 130, 49);
 
+		mainMenuSound = Gdx.audio.newSound(Gdx.files.internal("audio/Ouroboros.mp3"));
+		mainMenuSound.play();
+		
 		updateCamera();		//init camera to starting game location
 	}
 
@@ -193,15 +215,17 @@ public class Game implements ApplicationListener {
 		batch.begin();
 
 		//DRAW SPIRTES TO BATCH
-		mainMenuLoginSprite.draw(batch);
-		mainMenuStartSprite.draw(batch);
-		mainMenuQuitSprite.draw(batch);
+		mainMenuRunSprite.draw(batch);
+		mainMenuSongManagerSprite.draw(batch);
+		mainMenuExitSprite.draw(batch);
+		mainMenuTitleSprite.draw(batch);
 
 		batch.end();
 
 		//FOR POSITIONING REASONS
-		camera.position.x = 400;
-		camera.position.y = 240;
+		camera.position.x = 0;
+		camera.position.y = 0;
+		camera.update();
 
 		//CLICK HANDLER
 		if (Gdx.input.isTouched()) {
@@ -219,7 +243,7 @@ public class Game implements ApplicationListener {
  * **********************************************************************************
  */
 			
-			if (touch.overlaps(mainMenuStart)) {
+			if (touch.overlaps(mainMenuRun)) {
 				//start game
 				
 				// TODO: this needs to be rewritten
@@ -227,6 +251,7 @@ public class Game implements ApplicationListener {
 				// initializes with song of choice
 				// generates frames[] and num_frames[]
 				// when finished, plays song with game
+				mainMenuSound.stop();
 				MusicOperator test = new MusicOperator();
 				Scanner in = new Scanner(System.in);
 				System.out.print("Song to run: ");
@@ -251,10 +276,10 @@ public class Game implements ApplicationListener {
  */				
 
 			}
-			else if (touch.overlaps(mainMenuLogin)) {
+			else if (touch.overlaps(mainMenuSongManager)) {
 				//probably won't do anything here
 			}
-			else if (touch.overlaps(mainMenuQuit)) {
+			else if (touch.overlaps(mainMenuExit)) {
 				//exit application
 				Gdx.app.exit();
 			}
@@ -264,7 +289,7 @@ public class Game implements ApplicationListener {
 		}
 	}
 
-	public void mainGame() {
+	public void mainGame() {		
 		//set background to black
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -603,6 +628,9 @@ public class Game implements ApplicationListener {
 			Sound sound = Gdx.audio.newSound(Gdx.files.internal(song));
 			sound.play();
 			
+			camera.position.x = 400;
+			camera.position.y = 240;
+			camera.update();
 			Game.getInstance().setGameState(2);
 		}
 		
