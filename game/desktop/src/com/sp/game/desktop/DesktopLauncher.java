@@ -3,9 +3,6 @@ package com.sp.game.desktop;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.sp.game.Game;
-import com.sp.game.tools.FramesLevelBuilder;
-
-import java.io.*;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
