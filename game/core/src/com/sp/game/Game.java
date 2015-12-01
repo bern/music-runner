@@ -3,6 +3,7 @@ package com.sp.game;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.TextInputListener;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
@@ -18,6 +19,7 @@ import com.sp.game.tools.FramesLevelBuilder;
 import com.sp.game.tools.LevelBuilder;
 import com.sp.game.tools.Movable;
 import com.sp.game.tools.MusicOperator;
+import com.sp.game.tools.SongFileInputListener;
 import com.sp.game.tools.TextureManager;
 
 import java.util.ArrayList;
@@ -29,6 +31,7 @@ import java.util.logging.FileHandler;
 public class Game implements ApplicationListener {
 
 	private static Game game;
+	public static MusicOperator mo;
 
 	//MAP OBJECTS
 	private OrthographicCamera camera;		//viewport
@@ -74,7 +77,7 @@ public class Game implements ApplicationListener {
 	public void create () {
 
 		game = this;
-
+		
 		//CREATE TEXTURE MANAGER
 		TextureManager.create();
 
@@ -251,18 +254,8 @@ public class Game implements ApplicationListener {
 				// initializes with song of choice
 				// generates frames[] and num_frames[]
 				// when finished, plays song with game
-				mainMenuSound.stop();
-				MusicOperator test = new MusicOperator();
-				Scanner in = new Scanner(System.in);
-				System.out.print("Song to run: ");
-				String song = in.next();
-			    if(!(song.substring(song.length()-4,song.length()).equals(".wav"))) {
-			     	song = song+".wav";
-			    }
-				if (thread == null) {
-					thread = new MusicWaitThread(test, song);
-					thread.start();
-				}
+				mo = new MusicOperator();
+				getFileNameInput();
 				
 				
 /*
@@ -608,7 +601,7 @@ public class Game implements ApplicationListener {
 		private MusicOperator mo;
 		private String song;
 		
-		public MusicWaitThread(MusicOperator mo, String song) {
+		public MusicWaitThread(MusicOperator mo) {
 			this.mo = mo;
 			this.song = song;
 		}
@@ -616,7 +609,7 @@ public class Game implements ApplicationListener {
 		@Override
 		public void run() {
 			try {
-				mo.initSelect(song);
+				mo.initSelect();
 				initLevel(mo, mo.getFrames(), mo.getNumFrames());
 			} catch (Exception e) {//MatlabConnectionException e) {
 				// TODO Auto-generated catch block
@@ -625,13 +618,14 @@ public class Game implements ApplicationListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}*/
-			Sound sound = Gdx.audio.newSound(Gdx.files.internal(song));
+			Sound sound = Gdx.audio.newSound(Gdx.files.internal(mo.getSong()));
 			sound.play();
 			
 			camera.position.x = 400;
 			camera.position.y = 240;
 			camera.update();
 			Game.getInstance().setGameState(2);
+			mainMenuSound.stop();
 		}
 		
 		public boolean isDone() {
@@ -643,4 +637,21 @@ public class Game implements ApplicationListener {
 	public void setGameState(int state) {
 		gameState = state;
 	}
+	
+	public void getFileNameInput() {
+		   Gdx.input.getTextInput(new TextInputListener() {
+		              @Override
+		              public void input(String text) {
+		                  mo.setSong(text);
+			  		      if (thread == null) {
+							thread = new MusicWaitThread(mo);
+							thread.start();
+						  }
+		              }
+		         @Override
+		         public void canceled() {
+		              
+		         }
+		        }, "File Name", "test3.wav", "");
+		}
 }

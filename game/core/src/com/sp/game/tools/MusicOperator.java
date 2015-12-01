@@ -7,10 +7,11 @@ public class MusicOperator {
 	private double[] frames;
 	private double numFrames = 0;
 	private boolean doneProcessing = false;
+	private String song;
 	
 	public MusicOperator() {}
 	
-	public void initSelect(String song)
+	public void initSelect()
 	{
 		String s = null;
 		numFrames = -1;		
@@ -59,5 +60,16 @@ public class MusicOperator {
 	
 	public double getNumFrames() {
 		return numFrames;
+	}
+	
+	public String getSong() {
+		return song;
+	}
+	
+	public void setSong(String song) {
+	    if(!(song.substring(song.length()-4,song.length()).equals(".wav"))) {
+	     	song = song+".wav";
+	    }
+		this.song = song;
 	}
 }
