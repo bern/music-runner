@@ -38,7 +38,7 @@ public class MusicOperator {
 		ArrayList<Integer> frameDensity = new ArrayList<Integer>();
 		
 		try {
-			Process p = Runtime.getRuntime().exec("python MusicAnalysis.py");
+			Process p = Runtime.getRuntime().exec("python MusicAnalysis.py "+song);
 			BufferedReader stdInput = new BufferedReader(new
                  InputStreamReader(p.getInputStream()));
  
@@ -64,12 +64,6 @@ public class MusicOperator {
 		frames = new double[frameData.size()];
 		for(int i = 0; i < frameData.size(); i++) {
 			frames[i] = frameData.get(i);
-		}
-		
-		System.out.println("Got frame data!");
-		
-		for(int i = 0; i < 30; i++) {
-			System.out.print(frames[i]+" ");
 		}
 		
 		doneProcessing = true;

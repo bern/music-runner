@@ -1,8 +1,13 @@
+import sys
+
 import numpy as np
 import scipy.io.wavfile
 
 def analyze():
-	rate, data = scipy.io.wavfile.read('test3.wav')
+	if(len(sys.argv) == 1):
+		return -1
+
+	rate, data = scipy.io.wavfile.read(sys.argv[1])
 
 	numFrames = len(data)
 

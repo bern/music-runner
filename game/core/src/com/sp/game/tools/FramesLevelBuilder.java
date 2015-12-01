@@ -37,8 +37,6 @@ public class FramesLevelBuilder extends LevelBuilder {
     
     public FramesLevelBuilder(double[] frames, double numFrames) {
     	super("levels/matlab_level.txt");
-    	System.out.println("FRAMES: "+numFrames);
-    	System.out.println("FIRST FRAME: "+frames[0]);
     	Integer[] int_features = new Integer[frames.length];
     	for (int i=0; i < frames.length; ++i) {
     		int_features[i] = (int)frames[i];

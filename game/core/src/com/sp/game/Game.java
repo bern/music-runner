@@ -228,15 +228,14 @@ public class Game implements ApplicationListener {
 				// generates frames[] and num_frames[]
 				// when finished, plays song with game
 				MusicOperator test = new MusicOperator();
-				/*Scanner in = new Scanner(System.in);
+				Scanner in = new Scanner(System.in);
 				System.out.print("Song to run: ");
 				String song = in.next();
 			    if(!(song.substring(song.length()-4,song.length()).equals(".wav"))) {
 			     	song = song+".wav";
-			    }*/
+			    }
 				if (thread == null) {
-					System.out.println("Hey there "+test.getNumFrames());
-					thread = new MusicWaitThread(test, "test3.wav");
+					thread = new MusicWaitThread(test, song);
 					thread.start();
 				}
 				
@@ -259,8 +258,9 @@ public class Game implements ApplicationListener {
 				//exit application
 				Gdx.app.exit();
 			}
-			if (thread != null) 
-				System.out.println(thread.isDone());
+			if (thread != null) {
+				//System.out.println(thread.isDone());
+			}
 		}
 	}
 
@@ -541,8 +541,6 @@ public class Game implements ApplicationListener {
 	private void initLevel(MusicOperator mo, double[] frames, double numFrames) {
 		//LOAD LEVEL ALGORITHM
 		//builder = new FramesLevelBuilder("gen/framesofinterest3.txt");
-		System.out.println("LALALALA: "+numFrames);
-		System.out.println(mo.getNumFrames());
 		builder = new FramesLevelBuilder(frames, numFrames);
 		System.out.println("Write path: "+builder.getWritePath());
 		FileHandle file = Gdx.files.internal(builder.getWritePath());
@@ -602,7 +600,6 @@ public class Game implements ApplicationListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}*/
-			System.out.println("HEY");
 			Sound sound = Gdx.audio.newSound(Gdx.files.internal(song));
 			sound.play();
 			
