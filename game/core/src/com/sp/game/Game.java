@@ -19,7 +19,6 @@ import com.sp.game.tools.FramesLevelBuilder;
 import com.sp.game.tools.LevelBuilder;
 import com.sp.game.tools.Movable;
 import com.sp.game.tools.MusicOperator;
-import com.sp.game.tools.SongFileInputListener;
 import com.sp.game.tools.TextureManager;
 
 import java.util.ArrayList;
