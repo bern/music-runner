@@ -1,17 +1,6 @@
 package com.sp.game.tools;
-import javax.sound.sampled.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
-
-import javax.sound.sampled.LineEvent.Type;
-import javax.swing.JFileChooser;
 import java.io.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.SwingUtilities;
 
 public class MusicOperator {
 

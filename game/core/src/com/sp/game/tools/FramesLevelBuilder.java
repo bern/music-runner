@@ -64,7 +64,7 @@ public class FramesLevelBuilder extends LevelBuilder {
 
             int numBlocks = (int) ((lastFrame / 44100.0) * ( 400 / 64.0));
 
-            for (int i = 0; i < numBlocks + 10; ++i ) {
+            for (int i = 0; i < numBlocks + 20; ++i ) {
                 out.write("Platform ".getBytes());
                 int cur = 64 * i;
                 String string = String.valueOf(cur);

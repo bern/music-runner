@@ -3,7 +3,10 @@ package com.sp.game.objects;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.sp.game.Game;
 import com.sp.game.tools.DifficultyUtility;
@@ -20,6 +23,16 @@ public class Avatar extends Entity {
     private int lives = 500000;
     private int ammo = 5;
 
+    //Avatar animation init
+    private Animation runAnimation;
+    private Texture avatarSprites;
+    private TextureRegion[] avatarFrames;
+    private TextureRegion curAvatarFrame;
+    private float stateTime;
+    private Sprite jumpRise;
+    private Sprite jumpFall;
+
+    //Wait threads
     private ReloadThread reloadThread = new ReloadThread();      //used to monitor reloading state
     private CoolDownThread cooldownThread = new CoolDownThread();
 
@@ -31,6 +44,17 @@ public class Avatar extends Entity {
         top = new Rectangle(0, 112, 128, 16);
 
         sprite = new Sprite(TextureManager.avatar, 0, 0, 128, 128);
+        jumpRise = new Sprite(TextureManager.avatar_rise, 0, 0, 128, 128);
+        jumpFall = new Sprite(TextureManager.avatar_fall, 0, 0, 128, 128);
+        avatarSprites = TextureManager.avatarSprites;
+        TextureRegion[][] tmp = TextureRegion.split(avatarSprites, avatarSprites.getWidth() / 5, avatarSprites.getHeight() / 5);
+        avatarFrames = new TextureRegion[6];
+        for(int i=0; i < 5; ++i)
+            avatarFrames[i] = tmp[0][i];
+        avatarFrames[5] = tmp[1][0];
+        runAnimation = new Animation(0.1f, avatarFrames);
+        stateTime = 0f;
+
         setPosition(0, 0);
         velocityY = 0;
     }
@@ -38,6 +62,21 @@ public class Avatar extends Entity {
     public Avatar(Game game) {
         this();
         this.game = game;
+    }
+
+    @Override
+    public void draw(SpriteBatch batch) {
+        stateTime += Gdx.graphics.getDeltaTime();
+        if (velocityY < 1 && velocityY > -1) {
+            curAvatarFrame = runAnimation.getKeyFrame(stateTime, true);
+        }
+        else if (velocityY >= 1) {
+            curAvatarFrame = jumpRise;
+        }
+        else {
+            curAvatarFrame = jumpFall;
+        }
+        batch.draw(curAvatarFrame, getHitBox().getX(), getHitBox().getY());
     }
 
     @Override
