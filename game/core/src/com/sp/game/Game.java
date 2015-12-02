@@ -63,8 +63,14 @@ public class Game implements ApplicationListener {
 	private Sprite gameOverMainMenuSprite, gameOverTitleSprite;
 	private Texture gameOverTexture;
 
+	//LOADING WHEEL
+	private Texture loadingTextTexture;
+	private Texture loadingTexture;
+	private Sprite loadingTextSprite;
+	private Sprite loadingSprite;
+
 	private List<GameObject> deleteList = new ArrayList<GameObject>();		//items queued to be deleted
-	private int gameState = 1; 	//1 = Main menu, 2 = In game, 3 = game finish, 4 = game over
+	private int gameState = 0; 	//0 = Loading, 1 = Main menu, 2 = In game, 3 = game finish, 4 = game over
 
 	//Game screen fonts
 	private BitmapFont welcome;
@@ -73,6 +79,9 @@ public class Game implements ApplicationListener {
 	private BitmapFont ammo;
 	private float fontPos = 0;		//For font "following" avatar
 
+	//Game stats font
+	private BitmapFont stats;
+
 	private LevelBuilder builder;
 	private String gameFilePath;
 	private boolean firstRender = true;
@@ -80,6 +89,8 @@ public class Game implements ApplicationListener {
 	private MusicWaitThread thread = null;
 
 	private boolean gameComplete = false;
+
+	private int highScore;
 
 	@Override
 	public void create () {
@@ -121,6 +132,10 @@ public class Game implements ApplicationListener {
 				Gdx.files.internal("font/font.png"), false);
 		lives.getData().setScale(1);
 
+		stats = new BitmapFont(Gdx.files.internal("font/font.fnt"),
+				Gdx.files.internal("font/font.png"), false);
+		stats.getData().setScale(1);
+
 		//CONFIGURE MAIN MENU SPRITES
 		/*mainMenuTexture = new Texture(Gdx.files.internal("img/mainmenuitems.png"));
 		mainMenuLoginSprite = new Sprite(mainMenuTexture, 0, 0, 256, 128);
@@ -153,8 +168,19 @@ public class Game implements ApplicationListener {
 		mainMenuSongManager = new Rectangle(mainMenuSongManagerSprite.getX(), mainMenuSongManagerSprite.getY(), 355, 55);
 		mainMenuExit = new Rectangle(mainMenuExitSprite.getX(), mainMenuExitSprite.getY(), 130, 49);
 
-		mainMenuSound = Gdx.audio.newSound(Gdx.files.internal("audio/Ouroboros.mp3"));
-		mainMenuSound.loop();
+		//Thread this song loading, it's taking too long...
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				mainMenuSound = Gdx.audio.newSound(Gdx.files.internal("audio/Ouroboros.mp3"));
+				mainMenuSound.loop();
+				gameState = 1;
+			}
+		}).start();
+
+
+//		mainMenuSound = Gdx.audio.newSound(Gdx.files.internal("audio/Ouroboros.mp3"));
+//		mainMenuSound.loop();
 
 		gameWinTexture = new Texture(Gdx.files.internal("img/gamefinish.png"));
 		gameWinTitleSprite = new Sprite(gameWinTexture, 22, 28, 705, 154);
@@ -169,8 +195,15 @@ public class Game implements ApplicationListener {
 
 		gameOverTitleSprite.setPosition(-365, 50);
 		gameOverMainMenuSprite.setPosition(120,-230);
+
+		loadingTexture = new Texture(Gdx.files.internal("img/colorwheel_sm.png"));
+		loadingTextTexture = new Texture(Gdx.files.internal("img/loadingtext.png"));
+		loadingTextSprite = new Sprite(loadingTextTexture, 0, 0, 424, 110);
+		loadingSprite = new Sprite(loadingTexture, 0, 0, 64, 64);
+		loadingSprite.setPosition(-45,40);
+		loadingTextSprite.setPosition(-200, -100);
 		
-		updateCamera();		//init camera to starting game location
+		//updateCamera();		//init camera to starting game location
 	}
 
 	@Override
@@ -193,6 +226,9 @@ public class Game implements ApplicationListener {
 				break;
 			case 4:
 				gameOver();		//to be implemented
+				break;
+			case 0:
+				loading();
 				break;
 
 		}
@@ -547,7 +583,7 @@ public class Game implements ApplicationListener {
 
 		//IS GAME OVER??
 		if (gameComplete)
-			gameState = 3;
+			onGameWin();
 
 	}
 
@@ -562,6 +598,7 @@ public class Game implements ApplicationListener {
 
 		gameWinTitleSprite.draw(batch);
 		gameWinMainMenuSprite.draw(batch);
+		displayStats();
 
 		batch.end();
 
@@ -591,6 +628,8 @@ public class Game implements ApplicationListener {
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
+		displayStats();
+
 		gameOverTitleSprite.draw(batch);
 		gameOverMainMenuSprite.draw(batch);
 
@@ -613,6 +652,38 @@ public class Game implements ApplicationListener {
 		}
 	}
 
+	public void loading() {
+		//set background to black
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		//init camera and batch
+		batch.setProjectionMatrix(camera.combined);
+		batch.begin();
+
+		loadingTextSprite.draw(batch);
+		loadingSprite.draw(batch);
+		loadingSprite.rotate(-5.0f);
+
+		batch.end();
+
+		//FOR POSITIONING REASONS
+		camera.position.x = 0;
+		camera.position.y = 0;
+		camera.update();
+
+		//CLICK HANDLER
+//		if (Gdx.input.isTouched()) {
+//			Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+//			camera.unproject(touchPos);
+//			Rectangle touch = new Rectangle(touchPos.x -16, touchPos.y - 16, 32, 32);
+//
+//			if (touch.overlaps(gameOverMainMenuSprite.getBoundingRectangle())) {
+//				gameState = 1;
+//			}
+//		}
+	}
+
 	public boolean addProjectile(float x, float y) {
 		//CHECK TO MAKE SURE PLAYER NOT FIRING BACKWARDS
 		if (x < (player.getHitBox().getX() + 110) )
@@ -628,6 +699,28 @@ public class Game implements ApplicationListener {
 		GameScore.shotsFired++;
 
 		return true;
+	}
+
+	public void displayStats() {
+		stats.draw(batch, "STATS", -360, 50);
+		stats.draw(batch, "Coins: " + GameScore.coinsCollected, -360,0);
+		stats.draw(batch, "Enemies stomped: " + GameScore.enemiesStomped, -360, -30);
+		stats.draw(batch, "Enemies shot: " + GameScore.enemiesShot, -360, -60);
+		stats.draw(batch, "Shots fired: " + GameScore.shotsFired, -360, -90);
+		if (GameScore.shotsFired != 0)
+			stats.draw(batch, "Accuracy: " + (100 * GameScore.enemiesShot / (GameScore.shotsFired)) + "%", -360, -120);
+		else
+			stats.draw(batch, "Accuracy: 0%", -360, -120);
+		stats.draw(batch, "Bounce streak: " + GameScore.bounceStreak, -360, -150);
+
+		stats.draw(batch, "Lives lost: " + GameScore.livesLost, 0, 0);
+		stats.draw(batch, "Lives gained: " + GameScore.livesGained, 0, -30);
+		stats.draw(batch, "TOTAL SCORE: " + (GameScore.coinsCollected * 10
+			+ (GameScore.enemiesShot + GameScore.enemiesStomped) * 10
+			+ (100 * GameScore.enemiesShot / (GameScore.shotsFired  + 1)) * (GameScore.shotsFired / 10)
+			+ GameScore.bounceStreak * 10
+			+ (GameScore.livesGained - GameScore.livesLost) * 100), 0, -90);
+
 	}
 
 	public Avatar getPlayer() {
@@ -703,6 +796,14 @@ public class Game implements ApplicationListener {
 		gameState = 4;
 	}
 
+	public void onGameWin() {
+		gameComplete = false;
+		gameSound.stop();
+		gameSound = null;
+		mainMenuSound.loop();
+		gameState = 3;
+	}
+
 	private class MusicWaitThread extends Thread {
 		
 		private MusicOperator mo;
@@ -732,6 +833,7 @@ public class Game implements ApplicationListener {
 			camera.position.y = 240;
 			camera.update();
 			GameScore.reset();
+			updateCamera();
 			Game.getInstance().setGameState(2);
 			mainMenuSound.stop();
 		}
@@ -750,12 +852,13 @@ public class Game implements ApplicationListener {
 		   Gdx.input.getTextInput(new TextInputListener() {
 		              @Override
 		              public void input(String text) {
+						  game.setGameState(0);
 						  SongCacheUtil.refreshCache();
 		                  mo.setSong(text);
-			  		      if (thread == null) {
+			  		      //if (thread == null) {
 							thread = new MusicWaitThread(mo);
 							thread.start();
-						  }
+						  //}
 		              }
 		         @Override
 		         public void canceled() {
