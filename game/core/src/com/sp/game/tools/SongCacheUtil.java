@@ -126,4 +126,18 @@ public class SongCacheUtil {
         else
             return null;
     }
+
+    public static void refreshCache() {
+        //PARSES THE CACHE FILE AND VALIDATES EXISTENCE OF MUSIC FILE AND LEVEL FILE.
+        //IF EITHER CONDITION FAILS, REMOVE THE CACHE ENTRY.
+        StringTokenizer tokens = getStringTokenizer();
+        while(tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            File wav = new File(token + ".wav");
+            File level = new File("levels/" + token + ".txt");
+            if (!wav.exists() || !level.exists()) {
+                removeLevel(token);
+            }
+        }
+    }
 }
