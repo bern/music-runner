@@ -19,6 +19,7 @@ import com.sp.game.tools.FramesLevelBuilder;
 import com.sp.game.tools.LevelBuilder;
 import com.sp.game.tools.Movable;
 import com.sp.game.tools.MusicOperator;
+import com.sp.game.tools.SongCacheUtil;
 import com.sp.game.tools.TextureManager;
 
 import java.util.ArrayList;
@@ -30,7 +31,8 @@ import java.util.logging.FileHandler;
 public class Game implements ApplicationListener {
 
 	private static Game game;
-	public static MusicOperator mo;
+	private static MusicOperator mo;
+	private static SongCacheUtil cache;
 
 	//MAP OBJECTS
 	private OrthographicCamera camera;		//viewport
@@ -76,6 +78,7 @@ public class Game implements ApplicationListener {
 	public void create () {
 
 		game = this;
+		cache = new SongCacheUtil();
 		
 		//CREATE TEXTURE MANAGER
 		TextureManager.create();
@@ -253,7 +256,7 @@ public class Game implements ApplicationListener {
 				// initializes with song of choice
 				// generates frames[] and num_frames[]
 				// when finished, plays song with game
-				mo = new MusicOperator();
+				mo = new MusicOperator(cache);
 				getFileNameInput();
 				
 				
@@ -558,9 +561,10 @@ public class Game implements ApplicationListener {
 	private void initLevel(MusicOperator mo, double[] frames, double numFrames) {
 		//LOAD LEVEL ALGORITHM
 		//builder = new FramesLevelBuilder("gen/framesofinterest3.txt");
-		builder = new FramesLevelBuilder(frames, numFrames);
+		builder = new FramesLevelBuilder(mo, frames, numFrames, cache);
 		System.out.println("Write path: "+builder.getWritePath());
 		FileHandle file = Gdx.files.internal(builder.getWritePath());
+		//System.out.println(file.readString());
 		StringTokenizer tokens = new StringTokenizer(file.readString());
 		while (tokens.hasMoreTokens()) {
 			String type = tokens.nextToken();

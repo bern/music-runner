@@ -35,14 +35,18 @@ public class FramesLevelBuilder extends LevelBuilder {
         generateLevel();
     }
     
-    public FramesLevelBuilder(double[] frames, double numFrames) {
-    	super("levels/matlab_level.txt");
+    public FramesLevelBuilder(MusicOperator mo, double[] frames, double numFrames, SongCacheUtil cache) {
+    	super("levels/"+mo.getSong()+".txt");
+    	if((cache.hasFrameBuiltLevel(mo.getSong()))) {
+    		this.setWritePath("levels/"+mo.getSong()+".txt");
+    		return;
+    	}
     	Integer[] int_features = new Integer[frames.length];
     	for (int i=0; i < frames.length; ++i) {
     		int_features[i] = (int)frames[i];
     	}
     	features = new ArrayList<Integer>(Arrays.asList(int_features));
-    	this.setWritePath("levels/matlab_level.txt");
+    	this.setWritePath("levels/"+mo.getSong()+".txt");
     	lastFrame = (int)numFrames;
     	generateLevel();
     }

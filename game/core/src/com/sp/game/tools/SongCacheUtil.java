@@ -45,6 +45,15 @@ public class SongCacheUtil {
         }
         return false;
     }
+    
+    public static boolean hasFrameBuiltLevel(String levelName) {
+        File levelFile = new File("levels/" + levelName + ".txt");
+        if (levelFile.exists()) {
+            return true;
+        }
+        return false;
+    }
+    
     public static boolean addLevel(String levelName) {
         //ADDS A LEVEL TO THE CACHE LIST IF IT IS NOT ALREADY PRESENT
         //AND A PROPER WAV FILE EXISTS FOR THE ADDITION
