@@ -21,7 +21,7 @@ public class Avatar extends Entity {
     private Game game;
 
     private int collectibles = 0;
-    private int lives = 500000;
+    private int lives = 5;
     private int ammo = 5;
 
     //Avatar animation init
@@ -105,7 +105,7 @@ public class Avatar extends Entity {
     public void takeDamage() {
         GameScore.livesLost++;
         if (--lives == 0) {
-            game.gameOver();
+            game.onGameOver();
         }
     }
 

@@ -38,6 +38,10 @@ public class Game implements ApplicationListener {
 	private ArrayList<VolumeBar> background = new ArrayList<VolumeBar>();	//background objects that move slower than camera
 	private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
 
+	//AUDIO OBJECTS
+	private Sound mainMenuSound;
+	private Sound gameSound;
+
 	//IN GAME CONTROLS & ITEMS
 	private Rectangle leftButton, rightButton, jumpButton;	//mobile controles
 	private Sprite spriteLeft, spriteRight, spriteJump;		//sprites for mobile controls
@@ -55,6 +59,10 @@ public class Game implements ApplicationListener {
 	private Sprite gameWinMainMenuSprite, gameWinTitleSprite;
 	private Texture gameWinTexture;
 
+	//GAME OVER ITEMS
+	private Sprite gameOverMainMenuSprite, gameOverTitleSprite;
+	private Texture gameOverTexture;
+
 	private List<GameObject> deleteList = new ArrayList<GameObject>();		//items queued to be deleted
 	private int gameState = 1; 	//1 = Main menu, 2 = In game, 3 = game finish, 4 = game over
 
@@ -68,9 +76,7 @@ public class Game implements ApplicationListener {
 	private LevelBuilder builder;
 	private String gameFilePath;
 	private boolean firstRender = true;
-	
-	private Sound mainMenuSound;
-	
+
 	private MusicWaitThread thread = null;
 
 	private boolean gameComplete = false;
@@ -156,6 +162,13 @@ public class Game implements ApplicationListener {
 
 		gameWinTitleSprite.setPosition(-365, 50);
 		gameWinMainMenuSprite.setPosition(130,-230);
+
+		gameOverTexture = new Texture(Gdx.files.internal("img/gameover.png"));
+		gameOverTitleSprite = new Sprite(gameOverTexture, 23, 29, 478, 163);
+		gameOverMainMenuSprite = new Sprite(gameOverTexture, 686, 506, 242, 47);
+
+		gameOverTitleSprite.setPosition(-365, 50);
+		gameOverMainMenuSprite.setPosition(120,-230);
 		
 		updateCamera();		//init camera to starting game location
 	}
@@ -570,7 +583,34 @@ public class Game implements ApplicationListener {
 	}
 
 	public void gameOver() {
-		gameState = 1;
+		//set background to black
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		//init camera and batch
+		batch.setProjectionMatrix(camera.combined);
+		batch.begin();
+
+		gameOverTitleSprite.draw(batch);
+		gameOverMainMenuSprite.draw(batch);
+
+		batch.end();
+
+		//FOR POSITIONING REASONS
+		camera.position.x = 0;
+		camera.position.y = 0;
+		camera.update();
+
+		//CLICK HANDLER
+		if (Gdx.input.isTouched()) {
+			Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+			camera.unproject(touchPos);
+			Rectangle touch = new Rectangle(touchPos.x -16, touchPos.y - 16, 32, 32);
+
+			if (touch.overlaps(gameOverMainMenuSprite.getBoundingRectangle())) {
+				gameState = 1;
+			}
+		}
 	}
 
 	public boolean addProjectile(float x, float y) {
@@ -655,7 +695,14 @@ public class Game implements ApplicationListener {
 		}
 		GameScore.totalEnemies = enemies.size();
 	}
-	
+
+	public void onGameOver() {
+		gameSound.stop();
+		gameSound = null;
+		mainMenuSound.loop();
+		gameState = 4;
+	}
+
 	private class MusicWaitThread extends Thread {
 		
 		private MusicOperator mo;
@@ -678,8 +725,8 @@ public class Game implements ApplicationListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}*/
-			Sound sound = Gdx.audio.newSound(Gdx.files.internal(mo.getSong()));
-			sound.play();
+			gameSound = Gdx.audio.newSound(Gdx.files.internal(mo.getSong()));
+			gameSound.play();
 			
 			camera.position.x = 400;
 			camera.position.y = 240;
