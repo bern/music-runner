@@ -14,13 +14,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.sp.game.objects.*;
-import com.sp.game.tools.Debug;
-import com.sp.game.tools.FramesLevelBuilder;
-import com.sp.game.tools.LevelBuilder;
-import com.sp.game.tools.Movable;
-import com.sp.game.tools.MusicOperator;
-import com.sp.game.tools.SongCacheUtil;
-import com.sp.game.tools.TextureManager;
+import com.sp.game.tools.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,8 +50,13 @@ public class Game implements ApplicationListener {
 	private Sprite mainMenuRunSprite, mainMenuSongManagerSprite, mainMenuExitSprite, mainMenuTitleSprite;
 	private Texture mainMenuTexture;
 
+	//GAME WIN ITEMS
+	private Rectangle gameWinMainMenu;
+	private Sprite gameWinMainMenuSprite, gameWinTitleSprite;
+	private Texture gameWinTexture;
+
 	private List<GameObject> deleteList = new ArrayList<GameObject>();		//items queued to be deleted
-	private int gameState = 1; 	//1 = Main menu, 2 = In game, 3 = game finish, 4 = game over
+	private int gameState = 3; 	//1 = Main menu, 2 = In game, 3 = game finish, 4 = game over
 
 	//Game screen fonts
 	private BitmapFont welcome;
@@ -73,6 +72,8 @@ public class Game implements ApplicationListener {
 	private Sound mainMenuSound;
 	
 	private MusicWaitThread thread = null;
+
+	private boolean gameComplete = false;
 
 	@Override
 	public void create () {
@@ -147,7 +148,14 @@ public class Game implements ApplicationListener {
 		mainMenuExit = new Rectangle(mainMenuExitSprite.getX(), mainMenuExitSprite.getY(), 130, 49);
 
 		mainMenuSound = Gdx.audio.newSound(Gdx.files.internal("audio/Ouroboros.mp3"));
-		mainMenuSound.play();
+		mainMenuSound.loop();
+
+		gameWinTexture = new Texture(Gdx.files.internal("img/gamefinish.png"));
+		gameWinTitleSprite = new Sprite(gameWinTexture, 22, 28, 705, 154);
+		gameWinMainMenuSprite = new Sprite(gameWinTexture, 686, 506, 242, 47);
+
+		gameWinTitleSprite.setPosition(-365, 50);
+		gameWinMainMenuSprite.setPosition(130,-230);
 		
 		updateCamera();		//init camera to starting game location
 	}
@@ -352,6 +360,8 @@ public class Game implements ApplicationListener {
 						case 2:		//player's bottom hit enemy- kill them!
 							deleteList.add(obj);
 							player.jump(200);
+							GameScore.curBounceStreak++;
+							GameScore.enemiesStomped++;
 							stomped = true;
 							break;
 						case 3:		//player hit collectible = add to delete list
@@ -369,7 +379,7 @@ public class Game implements ApplicationListener {
 								v.action(0, distance, 0);
 							}
 							break;
-						case 2:		//our left his enemy- we lose a life
+						case 2:		//our left hits enemy- we lose a life
 							player.takeDamage();
 							deleteList.add(obj);
 							//player.setPosition(0, 400);
@@ -377,6 +387,10 @@ public class Game implements ApplicationListener {
 							break;
 						case 3:		//collect item
 							deleteList.add(obj);
+							break;
+						case 4:
+							gameComplete = true;
+							break;
 					}
 					break;
 				case 3:		//it hit the RIGHT box
@@ -427,6 +441,7 @@ public class Game implements ApplicationListener {
 				if (p.hits(mn.getHitBox()) > 0) {
 					deleteList.add(p);
 					deleteList.add(mn);
+					GameScore.enemiesShot++;
 					break;
 				}
 			}
@@ -434,15 +449,19 @@ public class Game implements ApplicationListener {
 		//any objects that have been "killed" or taken
 		while(!deleteList.isEmpty()) {
 			GameObject obj = deleteList.get(0);
+			if (obj instanceof MusicNote) {
+				enemies.remove(obj);
+			}
+			if (obj instanceof FinishFlag) {
+				gameComplete = true;
+			}
 			if (obj instanceof Collectible) {
 				player.collect();
 			}
 			if (obj instanceof Projectile) {
 				projectiles.remove(obj);
 			}
-			if (obj instanceof MusicNote) {
-				enemies.remove(obj);
-			}
+
 			list.remove(obj);
 			deleteList.remove(0);
 		}
@@ -513,9 +532,47 @@ public class Game implements ApplicationListener {
 
 		updateCamera();
 
+		//IS GAME OVER??
+		if (gameComplete)
+			gameState = 3;
 
 	}
-	
+
+	public void gameFinish() {
+		//set background to black
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		//init camera and batch
+		batch.setProjectionMatrix(camera.combined);
+		batch.begin();
+
+		gameWinTitleSprite.draw(batch);
+		gameWinMainMenuSprite.draw(batch);
+
+		batch.end();
+
+		//FOR POSITIONING REASONS
+		camera.position.x = 0;
+		camera.position.y = 0;
+		camera.update();
+
+		//CLICK HANDLER
+		if (Gdx.input.isTouched()) {
+			Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+			camera.unproject(touchPos);
+			Rectangle touch = new Rectangle(touchPos.x -16, touchPos.y - 16, 32, 32);
+
+			if (touch.overlaps(gameWinMainMenuSprite.getBoundingRectangle())) {
+				gameState = 1;
+			}
+		}
+	}
+
+	public void gameOver() {
+		gameState = 1;
+	}
+
 	public boolean addProjectile(float x, float y) {
 		//CHECK TO MAKE SURE PLAYER NOT FIRING BACKWARDS
 		if (x < (player.getHitBox().getX() + 110) )
@@ -528,16 +585,9 @@ public class Game implements ApplicationListener {
 				x,
 				y
 		));
+		GameScore.shotsFired++;
 
 		return true;
-	}
-
-	public void gameFinish() {
-		//TODO
-	}
-
-	public void gameOver() {
-		gameState = 1;
 	}
 
 	public Avatar getPlayer() {
@@ -596,7 +646,14 @@ public class Game implements ApplicationListener {
 						Integer.parseInt(tokens.nextToken()),
 						Integer.parseInt(tokens.nextToken())));
 			}
+			else if (type.equals("Flag")) {
+				list.add(new FinishFlag(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())
+				));
+			}
 		}
+		GameScore.totalEnemies = enemies.size();
 	}
 	
 	private class MusicWaitThread extends Thread {
@@ -627,6 +684,7 @@ public class Game implements ApplicationListener {
 			camera.position.x = 400;
 			camera.position.y = 240;
 			camera.update();
+			GameScore.reset();
 			Game.getInstance().setGameState(2);
 			mainMenuSound.stop();
 		}
@@ -645,6 +703,7 @@ public class Game implements ApplicationListener {
 		   Gdx.input.getTextInput(new TextInputListener() {
 		              @Override
 		              public void input(String text) {
+						  SongCacheUtil.refreshCache();
 		                  mo.setSong(text);
 			  		      if (thread == null) {
 							thread = new MusicWaitThread(mo);

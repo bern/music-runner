@@ -77,6 +77,11 @@ public class FramesLevelBuilder extends LevelBuilder {
                     out.write(string.getBytes());
                     out.write(" 48\n".getBytes());
                 }
+                if (i == (numBlocks + 10)) {
+                    out.write("Flag ".getBytes());
+                    out.write(string.getBytes());
+                    out.write(" 64\n".getBytes());
+                }
             }
 
 

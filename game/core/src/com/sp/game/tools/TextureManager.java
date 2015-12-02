@@ -21,6 +21,7 @@ public class TextureManager {
     public static Texture volumeBar;
     public static Texture projectile;
     public static Texture avatarSprites;
+    public static Texture flag;
 
     public static void create() {
         platform = new Texture(Gdx.files.internal("img/platform_square_cont64.png"));
@@ -33,6 +34,7 @@ public class TextureManager {
         volumeBar = new Texture(Gdx.files.internal("img/background_alt.png"));
         projectile = new Texture(Gdx.files.internal("img/projectile.png"));
         avatarSprites = new Texture(Gdx.files.internal("img/hero_sprites.png"));
+        flag = new Texture(Gdx.files.internal("img/flag.png"));
     }
 
     public static void dispose() {
@@ -46,6 +48,7 @@ public class TextureManager {
         volumeBar.dispose();
         projectile.dispose();
         avatarSprites.dispose();
+        flag.dispose();
     }
 
 
