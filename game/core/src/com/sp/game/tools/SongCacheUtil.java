@@ -137,6 +137,18 @@ public class SongCacheUtil {
         else
             return null;
     }
+    
+    public static ArrayList<String> getCacheList() {
+    	ArrayList<String> result = new ArrayList<String>();
+    	
+    	StringTokenizer tokens = getStringTokenizer();
+        while(tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            result.add(token);
+        }
+    	
+    	return result;
+    }
 
     public static void refreshCache() {
         //PARSES THE CACHE FILE AND VALIDATES EXISTENCE OF MUSIC FILE AND LEVEL FILE.
