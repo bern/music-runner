@@ -16,6 +16,10 @@ public class Collectible extends GameObject {
     Sprite sprite;
     Texture texture;
 
+    public Collectible() {
+
+    }
+
     public Collectible (int x, int y) {
         hitBox = new Rectangle(x,y,64,64);
         sprite = new Sprite(TextureManager.collectible);

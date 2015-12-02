@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.sp.game.Game;
 import com.sp.game.tools.DifficultyUtility;
+import com.sp.game.tools.GameScore;
 import com.sp.game.tools.TextureManager;
 
 /**
@@ -20,7 +21,7 @@ public class Avatar extends Entity {
     private Game game;
 
     private int collectibles = 0;
-    private int lives = 500000;
+    private int lives = 5;
     private int ammo = 5;
 
     //Avatar animation init
@@ -90,17 +91,21 @@ public class Avatar extends Entity {
             velocityY = 0;
             setPosition(x, bottom.y);
         }
+        GameScore.handleLanding();
     }
 
     public void collect() {
+        GameScore.coinsCollected++;
         if (++collectibles % DifficultyUtility.MUSHROOM_EASY == 0) {
             lives++;
+            GameScore.livesGained++;
         }
     }
 
     public void takeDamage() {
+        GameScore.livesLost++;
         if (--lives == 0) {
-            game.gameOver();
+            game.onGameOver();
         }
     }
 
