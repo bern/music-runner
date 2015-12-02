@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 /**
@@ -148,5 +150,16 @@ public class SongCacheUtil {
                 removeLevel(token);
             }
         }
+    }
+
+    public static List<String> getCachedSongList() {
+        refreshCache();
+        ArrayList<String> list = new ArrayList<String>();
+        StringTokenizer tokens = getStringTokenizer();
+        while (tokens.hasMoreTokens()) {
+            String token = tokens.nextToken();
+            list.add(token);
+        }
+        return list;
     }
 }
