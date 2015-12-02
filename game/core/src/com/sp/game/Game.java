@@ -119,6 +119,7 @@ public class Game implements ApplicationListener {
 	private MusicWaitThread thread = null;
 
 	private boolean gameComplete = false;
+	private boolean gameOver = false;
 
 	private int highScore;
 
@@ -273,10 +274,11 @@ public class Game implements ApplicationListener {
 		loadingTextTexture = new Texture(Gdx.files.internal("img/loadingtext.png"));
 		loadingTextSprite = new Sprite(loadingTextTexture, 0, 0, 424, 110);
 		loadingSprite = new Sprite(loadingTexture, 0, 0, 64, 64);
-		loadingSprite.setPosition(-45,40);
+		loadingSprite.setPosition(-45, 40);
 		loadingTextSprite.setPosition(-200, -100);
 
 		//updateCamera();		//init camera to starting game location
+		resetGame();
 
 		populateSongList();
 		updateCamera();		//init camera to starting game location
@@ -785,6 +787,9 @@ public class Game implements ApplicationListener {
 		//IS GAME OVER??
 		if (gameComplete)
 			onGameWin();
+		if (gameOver) {
+			onGameOver();
+		}
 
 	}
 
@@ -990,11 +995,16 @@ public class Game implements ApplicationListener {
 		GameScore.totalEnemies = enemies.size();
 	}
 
+	public void setGameOver() {
+		gameOver = true;
+	}
 	public void onGameOver() {
+		gameOver = false;
 		gameSound.stop();
 		gameSound = null;
 		mainMenuSound.loop();
 		gameState = 4;
+		resetGame();
 	}
 
 	public void onGameWin() {
@@ -1003,6 +1013,7 @@ public class Game implements ApplicationListener {
 		gameSound = null;
 		mainMenuSound.loop();
 		gameState = 3;
+		resetGame();
 	}
 
 	private class MusicWaitThread extends Thread {
@@ -1073,5 +1084,15 @@ public class Game implements ApplicationListener {
 		for(int i = 0; i < cacheList.size(); i++) {
 			songListItems.add(new SongListItem(-360, SONG_LIST_ITEM_Y_OFFSET+(-40*i), cacheList.get(i)));
 		}
+	}
+
+	public void resetGame() {
+		player = new Avatar(this);
+		player.setPosition(100, 200);
+		list.clear();
+		enemies.clear();
+		foreground.clear();
+		background.clear();
+		projectiles.clear();
 	}
 }

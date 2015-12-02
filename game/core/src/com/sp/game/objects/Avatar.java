@@ -105,7 +105,7 @@ public class Avatar extends Entity {
     public void takeDamage() {
         GameScore.livesLost++;
         if (--lives == 0) {
-            game.onGameOver();
+            game.setGameOver();
         }
     }
 
