@@ -56,7 +56,7 @@ public class Game implements ApplicationListener {
 	private Texture gameWinTexture;
 
 	private List<GameObject> deleteList = new ArrayList<GameObject>();		//items queued to be deleted
-	private int gameState = 3; 	//1 = Main menu, 2 = In game, 3 = game finish, 4 = game over
+	private int gameState = 1; 	//1 = Main menu, 2 = In game, 3 = game finish, 4 = game over
 
 	//Game screen fonts
 	private BitmapFont welcome;
