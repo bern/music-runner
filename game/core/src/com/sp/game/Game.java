@@ -126,8 +126,6 @@ public class Game implements ApplicationListener {
 	private String gameFilePath;
 	private boolean firstRender = true;
 
-	private MusicWaitThread thread = null;
-
 	private boolean gameComplete = false;
 	private boolean gameOver = false;
 
@@ -441,9 +439,6 @@ public class Game implements ApplicationListener {
 			else if (touch.overlaps(mainMenuExit)) {
 				//exit application
 				Gdx.app.exit();
-			}
-			if (thread != null) {
-				//System.out.println(thread.isDone());
 			}
 		}
 	}
@@ -1304,10 +1299,8 @@ public class Game implements ApplicationListener {
 			                  cache.addLevel(text);
 			                  populateSongList();
 			                  //if(!cache.hasLevel(text)) {
-				  		      if (thread == null) {
-								thread = new MusicWaitThread(mo);
-								thread.start();
-							  }
+			                  MusicWaitThread musicWaitThread = new MusicWaitThread(mo);
+			                  musicWaitThread.start();
 		  				  }
 		  				  else {
 		  					  System.out.println(".wav file not found!");
