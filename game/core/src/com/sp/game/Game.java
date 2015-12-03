@@ -560,7 +560,6 @@ public class Game implements ApplicationListener {
 				System.out.println(selectedSong);
 				mainMenuSound.stop();
 				gameSound = Gdx.audio.newSound(Gdx.files.internal(selectedSong));
-				gameSound.play();
 				
 				camera.position.x = 400;
 				camera.position.y = 240;
@@ -571,6 +570,17 @@ public class Game implements ApplicationListener {
 				initLevel(selectedSong);
 				
 				Game.getInstance().setGameState(2);
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							Thread.sleep(2350);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						gameSound.play();
+					}
+				}).start();
 				
 			}
 		}
@@ -755,7 +765,9 @@ public class Game implements ApplicationListener {
 		}
 		spriteJump.draw(batch);
 
-		welcome.draw(batch, "Welcome to Music Runner", 20, 350);
+		welcome.draw(batch, "Welcome to Music Runner", 400, 350);
+		welcome.draw(batch, "Current song: " + selectedSong, 1100, 350);
+		welcome.draw(batch, "Good luck!", 1100, 250);
 		lives.draw(batch, "Lives: " + player.getLives(), player.getHitBox().getX() - 20, 450);
 		lives.draw(batch, "Coins: " + player.getCollectibles(), player.getHitBox().getX() + 280, 450);
 		lives.draw(batch, "Ammo: " + player.getAmmo(), player.getHitBox().getX() + 580, 450);
@@ -1347,7 +1359,7 @@ public class Game implements ApplicationListener {
 
 	public void resetGame() {
 		player = new Avatar(this);
-		player.setPosition(00, 200);
+		player.setPosition(200, 200);
 		list.clear();
 		enemies.clear();
 		foreground.clear();

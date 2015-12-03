@@ -20,6 +20,8 @@ public class FramesLevelBuilder extends LevelBuilder {
     private StringTokenizer tokens;
     private ArrayList<Integer> features;
     private int lastFrame;
+    private static final int BLOCK_BUFFER_NUM = 60;
+    private static final int BLOCK_BUFFER_PIXELS = BLOCK_BUFFER_NUM * 64;
 
     public FramesLevelBuilder(String filepath) {
         super(filepath);
@@ -66,7 +68,7 @@ public class FramesLevelBuilder extends LevelBuilder {
 
             int numBlocks = (int) ((lastFrame / 44100.0) * ( 400 / 64.0));
 
-            for (int i = 0; i < numBlocks + 20; ++i ) {
+            for (int i = 0; i < (numBlocks + BLOCK_BUFFER_NUM); ++i ) {
                 out.write("Platform ".getBytes());
                 int cur = 64 * i;
                 String string = String.valueOf(cur);
@@ -77,7 +79,7 @@ public class FramesLevelBuilder extends LevelBuilder {
                     out.write(string.getBytes());
                     out.write(" 48\n".getBytes());
                 }
-                if (i == (numBlocks + 10)) {
+                if (i == (numBlocks + BLOCK_BUFFER_NUM - 20)) {
                     out.write("Flag ".getBytes());
                     out.write(string.getBytes());
                     out.write(" 64\n".getBytes());
@@ -91,6 +93,7 @@ public class FramesLevelBuilder extends LevelBuilder {
 
                 double rand = Math.random();
                 int cur = (int) ((features.get(i) * 400.0) / (44100.0));
+                cur += BLOCK_BUFFER_PIXELS / 2;
                 String string = String.valueOf(cur);
                 if (Math.random() < DifficultyUtility.ENEMY_HARD) {
                     if (Math.abs(cur - prevLocEnemy) > 100) {
