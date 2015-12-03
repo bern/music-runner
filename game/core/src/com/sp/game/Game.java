@@ -14,6 +14,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.sp.game.objects.*;
 import com.sp.game.tools.*;
 
@@ -84,6 +86,8 @@ public class Game implements ApplicationListener {
 	private Texture songManagerTexture;
 	private Sprite songManagerTitleSprite, songManagerAddSprite, songManagerRemoveSprite;
 	private Rectangle songManagerAdd, songManagerRemove;
+	
+	private Skin dialogSkin;
 	
 	//GAME WIN ITEMS
 	private Rectangle gameWinMainMenu;
@@ -295,6 +299,8 @@ public class Game implements ApplicationListener {
 		loadingSprite.setPosition(-45, 40);
 		loadingTextSprite.setPosition(-200, -100);
 
+		//dialogSkin = new Skin(Gdx.files.internal("uiskin.json"));
+		
 		//updateCamera();		//init camera to starting game location
 		populateSongList();
 		resetGame();
@@ -653,7 +659,7 @@ public class Game implements ApplicationListener {
 					}
 				}
 			}
-			else if (touch.overlaps(songManagerRemove) && (!selectedSong.equals(""))) {
+			else if (touch.overlaps(songManagerRemove) && (!selectedSong.equals("")) && songIsLoaded(selectedSong)) {
 				cache.removeLevel(selectedSong);
 				selectedSong = "";
 				populateSongList();
@@ -1292,21 +1298,36 @@ public class Game implements ApplicationListener {
 		              public void input(String text) {
 		  				  if (!text.contains(".wav"))
 		  					  text = text + ".wav";
-		                  MusicOperator mo = new MusicOperator(cache);
-		            	  mo.setSong(text);
-		                  cache.addLevel(text);
-		                  populateSongList();
-		                  //if(!cache.hasLevel(text)) {
+		  				  if(cache.hasWavFile(text)) {
+			                  MusicOperator mo = new MusicOperator(cache);
+			            	  mo.setSong(text);
+			                  cache.addLevel(text);
+			                  populateSongList();
+			                  //if(!cache.hasLevel(text)) {
 				  		      if (thread == null) {
 								thread = new MusicWaitThread(mo);
 								thread.start();
 							  }
+		  				  }
+		  				  else {
+		  					  System.out.println(".wav file not found!");
+		  					  //Dialog wavNotFoundDialog = new Dialog(".wav not found!", skin);
+		  					  
+							  /*Dialog diag = new Dialog("Warning", dialogSkin, "dialog") {
+								  public void result(Object obj) {
+								      System.out.println("result "+obj);
+								  }
+							  };
+							  diag.text("Are you sure you want to quit?");
+							  diag.button("Ok", true); //sends "true" as the result
+							  //diag.show();*/
+		  				  }
 		              }
 		         @Override
 		         public void canceled() {
 		        	 // do nothing
 		         }
-		   }, "File Name", "test3.wav", "");
+		   }, "Add a song", "", "input your song name here!");
 	}
 	
 	public void populateSongList() {
