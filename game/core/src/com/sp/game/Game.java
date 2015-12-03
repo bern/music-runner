@@ -137,10 +137,6 @@ public class Game implements ApplicationListener {
 		camera.setToOrtho(false, 800, 480);
 		batch = new SpriteBatch();
 
-		//CONFIGURE AVATAR
-		player = new Avatar(this);
-		player.setPosition(100, 200);
-
 		//CONFIGURE MOBILE CONTROLS
 		buttonTexture = new Texture(Gdx.files.internal("img/arrows.png"));
 		spriteLeft = new Sprite(buttonTexture, 0, 0, 64, 64);
@@ -1088,11 +1084,12 @@ public class Game implements ApplicationListener {
 
 	public void resetGame() {
 		player = new Avatar(this);
-		player.setPosition(100, 200);
+		player.setPosition(00, 200);
 		list.clear();
 		enemies.clear();
 		foreground.clear();
 		background.clear();
 		projectiles.clear();
+		batch = new SpriteBatch();
 	}
 }
