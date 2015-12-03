@@ -26,7 +26,6 @@ import java.util.logging.FileHandler;
 public class Game implements ApplicationListener {
 
 	private static Game game;
-	private static MusicOperator mo;
 	private static SongCacheUtil cache;
 
 	//MAP OBJECTS
@@ -81,6 +80,11 @@ public class Game implements ApplicationListener {
 	private int SONG_LIST_ITEM_Y_OFFSET = 35;
 	private int SCROLL_BAR_Y_OFFSET = -25;
 
+	//SONG MANAGER ITEMS
+	private Texture songManagerTexture;
+	private Sprite songManagerTitleSprite, songManagerAddSprite, songManagerRemoveSprite;
+	private Rectangle songManagerAdd, songManagerRemove;
+	
 	//GAME WIN ITEMS
 	private Rectangle gameWinMainMenu;
 	private Sprite gameWinMainMenuSprite, gameWinTitleSprite;
@@ -98,13 +102,15 @@ public class Game implements ApplicationListener {
 
 	private List<GameObject> deleteList = new ArrayList<GameObject>();		//items queued to be deleted
 
-	private int gameState = 0; 	//1 = Main menu, 2 = In game, 3 = game finish, 4 = game over, 5 = song select
+	//0 = loading, 1 = Main menu, 2 = In game, 3 = game finish, 4 = game over, 5 = song select, 6 = song manager
+	private int gameState = 0;
 
 	//Game screen fonts
 	private BitmapFont welcome;
 	private BitmapFont lives;
 	private BitmapFont songList;
 	private BitmapFont songListSelected;
+	private BitmapFont songListLoading;
 	private BitmapFont collectibles;
 	private BitmapFont ammo;
 	private float fontPos = 0;		//For font "following" avatar
@@ -165,6 +171,11 @@ public class Game implements ApplicationListener {
 
 		songList = new BitmapFont(Gdx.files.internal("font/font.fnt"),
 				Gdx.files.internal("font/font.png"), false);
+		songList.getData().setScale(1);
+		
+		songListLoading = new BitmapFont(Gdx.files.internal("font/font.fnt"),
+				Gdx.files.internal("font/font.png"), false);
+		songListLoading.setColor(Color.RED);
 		songList.getData().setScale(1);
 		
 		songListSelected = new BitmapFont(Gdx.files.internal("font/font.fnt"),
@@ -229,7 +240,6 @@ public class Game implements ApplicationListener {
 		songSelectScrollBarSprite = new Sprite(songSelectTexture, 570, 224, 15, 66);
 		songSelectScrollHolderSprite = new Sprite(songSelectTexture, 529, 221, 25, 265);
 		
-		mainMenuTitleSprite.setPosition(-365, 50);
 		songSelectTitleSprite.setPosition(-365, 55);
 		songSelectGoSprite.setPosition(125, -150);
 		//songSelectGoSprite.setPosition(-370, 0);
@@ -251,6 +261,18 @@ public class Game implements ApplicationListener {
 		songSelectMaskSprite = new Sprite(songSelectMaskTexture, 0, 0, 940, 571);
 		
 		songSelectMaskSprite.setPosition(-515, -330);
+		
+		songManagerTexture = new Texture(Gdx.files.internal("img/songmanagericons.png"));
+		songManagerTitleSprite = new Sprite(songManagerTexture, 142, 157, 299, 41);
+		songManagerAddSprite = new Sprite(songManagerTexture, 717, 302, 120, 41);
+		songManagerRemoveSprite = new Sprite(songManagerTexture, 718, 362, 184, 41);
+		
+		songManagerTitleSprite.setPosition(-365, 55);
+		songManagerAddSprite.setPosition(129, -95);
+		songManagerRemoveSprite.setPosition(128, -145);
+		
+		songManagerAdd = new Rectangle(songManagerAddSprite.getX(), songManagerAddSprite.getY(), 120, 41);
+		songManagerRemove = new Rectangle(songManagerRemoveSprite.getX(), songManagerRemoveSprite.getY(), 184, 41);
 
 		gameWinTexture = new Texture(Gdx.files.internal("img/gamefinish.png"));
 		gameWinTitleSprite = new Sprite(gameWinTexture, 22, 28, 705, 154);
@@ -274,9 +296,8 @@ public class Game implements ApplicationListener {
 		loadingTextSprite.setPosition(-200, -100);
 
 		//updateCamera();		//init camera to starting game location
-		resetGame();
-
 		populateSongList();
+		resetGame();
 		updateCamera();		//init camera to starting game location
 	}
 
@@ -306,6 +327,9 @@ public class Game implements ApplicationListener {
 				break;
 			case 5:
 				songSelect();
+				break;
+			case 6:
+				songManager();
 				break;
 
 		}
@@ -406,6 +430,7 @@ public class Game implements ApplicationListener {
 			}
 			else if (touch.overlaps(mainMenuSongManager)) {
 				//probably won't do anything here
+				this.setGameState(6);
 			}
 			else if (touch.overlaps(mainMenuExit)) {
 				//exit application
@@ -432,7 +457,15 @@ public class Game implements ApplicationListener {
 			if(s.getTitle().equals(selectedSong)) {
 				songSelectSelectSprite.setPosition(s.getX()-10, s.getY()-35);
 				songSelectSelectSprite.draw(batch);
-				songListSelected.draw(batch, s.getTitle(), s.getX(), s.getY());
+				if(s.getIsLoaded()) {
+					songListSelected.draw(batch, s.getTitle(), s.getX(), s.getY());
+				}
+				else {
+					songListLoading.draw(batch, s.getTitle(), s.getX(), s.getY());
+				}	
+			}
+			else if(!s.getIsLoaded()) {
+				songListLoading.draw(batch, s.getTitle(), s.getX(), s.getY());
 			}
 			else {
 				songList.draw(batch, s.getTitle(), s.getX(), s.getY());
@@ -477,8 +510,8 @@ public class Game implements ApplicationListener {
 					}
 				}
 			}
-			else if (touch.overlaps(songSelectScrollHolder)) {
-				if(touch.overlaps(songSelectScrollBar)) {
+			else if (touch.overlaps(songSelectScrollHolder) && songListItems.size() > 0) {
+				if(touch.overlaps(songSelectScrollBar)) {	
 					if(isScrollSelected == 0) {
 						isScrollSelected = 1;
 						initialY = songListItems.get(0).getY();
@@ -522,11 +555,156 @@ public class Game implements ApplicationListener {
 			else if(touch.overlaps(songSelectBack)) {
 				this.setGameState(1);
 			}
-			else if(touch.overlaps(songSelectGo)) {
-				mo = new MusicOperator(cache);
-				mo.setSong(selectedSong);
-				thread = new MusicWaitThread(mo);
-				thread.start();
+			else if(touch.overlaps(songSelectGo) && !(selectedSong.equals("")) && songIsLoaded(selectedSong)) {
+				System.out.println(selectedSong);
+				mainMenuSound.stop();
+				gameSound = Gdx.audio.newSound(Gdx.files.internal(selectedSong));
+				gameSound.play();
+				
+				camera.position.x = 400;
+				camera.position.y = 240;
+				camera.update();
+				GameScore.reset();
+				
+				System.out.println("initlevel");
+				initLevel(selectedSong);
+				
+				Game.getInstance().setGameState(2);
+				
+			}
+		}
+		else {
+			if(isScrollSelected == 1) {
+				isScrollSelected = 0;
+				SCROLL_BAR_Y_OFFSET = (int)songSelectScrollBarSprite.getY();
+			}
+		}
+		
+		//mo = new MusicOperator(cache);
+		//getFileNameInput();
+	}
+	
+	public void songManager() {	
+		//set background to black
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
+		//ALLOW DRAWING OF TEXTURES
+		batch.setProjectionMatrix(camera.combined);
+		batch.begin();
+
+		//DRAW SPIRTES TO BATCH
+		// SONG LIST HERE
+		for(SongListItem s: songListItems) {
+			if(s.getTitle().equals(selectedSong)) {
+				songSelectSelectSprite.setPosition(s.getX()-10, s.getY()-35);
+				songSelectSelectSprite.draw(batch);
+				if(s.getIsLoaded()) {
+					songListSelected.draw(batch, s.getTitle(), s.getX(), s.getY());
+				}
+				else {
+					songListLoading.draw(batch, s.getTitle(), s.getX(), s.getY());
+				}	
+			}
+			else if(!s.getIsLoaded()) {
+				songListLoading.draw(batch, s.getTitle(), s.getX(), s.getY());
+			}
+			else {
+				songList.draw(batch, s.getTitle(), s.getX(), s.getY());
+			}
+		}
+		// MASK FOR TRANSPARENCY
+		songSelectMaskSprite.draw(batch);
+		
+		//REST OF SCREEN ELEMENTS
+		mainMenuTitleSprite.draw(batch);
+		mainMenuTitleSprite.draw(batch);
+		songManagerTitleSprite.draw(batch);
+		songSelectBackSprite.draw(batch);
+		songManagerAddSprite.draw(batch);
+		songManagerRemoveSprite.draw(batch);
+		songSelectScrollHolderSprite.draw(batch);
+		
+		songSelectScrollBar = new Rectangle(
+				songSelectScrollBarSprite.getX(), 
+				songSelectScrollBarSprite.getY()+10,
+				songSelectScrollBarSprite.getWidth()-10,
+				songSelectScrollBarSprite.getHeight()-25);
+		
+		songSelectScrollBarSprite.draw(batch);
+		
+		batch.end();
+
+		//FOR POSITIONING REASONS
+		camera.position.x = 0;
+		camera.position.y = 0;
+		camera.update();
+		
+		if (Gdx.input.isTouched()) {
+			Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+			camera.unproject(touchPos);
+			Rectangle touch = new Rectangle(touchPos.x -16, touchPos.y - 16, 32, 32);
+			if (touch.overlaps(songSelectSongList)) {
+				for(SongListItem s: songListItems) {
+					songSelectSongBox = new Rectangle(s.getX(), s.getY()-20, 370, 40);
+					if(touch.overlaps(songSelectSongBox)) {
+						selectedSong = s.getTitle();
+						break;
+					}
+				}
+			}
+			else if (touch.overlaps(songManagerRemove) && (!selectedSong.equals(""))) {
+				cache.removeLevel(selectedSong);
+				selectedSong = "";
+				populateSongList();
+			}
+			else if (touch.overlaps(songManagerAdd)) {
+				getFileNameInput();
+			}
+			else if (touch.overlaps(songSelectScrollHolder) && songListItems.size() > 0) {
+				if(touch.overlaps(songSelectScrollBar)) {
+					if(isScrollSelected == 0) {
+						isScrollSelected = 1;
+						initialY = songListItems.get(0).getY();
+						storeMouseY = (int)(touchPos.y);
+					}
+				}
+				if(isScrollSelected == 1) {
+					/*
+					 * 		songSelectScrollHolderSprite = new Sprite(songSelectTexture, 529, 221, 25, 265);
+					 *		songSelectScrollHolderSprite.setPosition(15, -220);
+					 */
+					if(
+							SCROLL_BAR_Y_OFFSET+(touchPos.y-storeMouseY) > -215 && 
+							SCROLL_BAR_Y_OFFSET+(touchPos.y-storeMouseY) < -26
+					) {
+						System.out.println((touchPos.y-storeMouseY));
+						songSelectScrollBarSprite.setPosition(20, SCROLL_BAR_Y_OFFSET+(touchPos.y-storeMouseY));
+						songSelectScrollBar = new Rectangle(
+								20, 
+								SCROLL_BAR_Y_OFFSET+(touchPos.y-storeMouseY),
+								songSelectScrollBarSprite.getWidth()-10,
+								songSelectScrollBarSprite.getHeight()-25
+						);
+						
+						// -26 to -215 are boundaries
+						int range = 189;
+						
+						int listHeight = (int) (songSelectSelectSprite.getHeight()*songListItems.size());
+						for(int i = 0; i < songListItems.size(); i++) {
+							SongListItem s = songListItems.get(i);
+							s.setY((int)
+								(
+									((initialY)+(-songSelectSelectSprite.getHeight()*i))-
+									((touchPos.y-storeMouseY)*(listHeight/range))
+								)
+							);
+						}
+					}
+				}
+			}
+			else if(touch.overlaps(songSelectBack)) {
+				this.setGameState(1);
 			}
 		}
 		else {
@@ -990,6 +1168,51 @@ public class Game implements ApplicationListener {
 		}
 		GameScore.totalEnemies = enemies.size();
 	}
+	
+	private void initLevel(String levelFile) {
+		//LOAD LEVEL ALGORITHM
+		//builder = new FramesLevelBuilder("gen/framesofinterest3.txt");
+		FileHandle file = Gdx.files.internal(cache.getLevelPath(levelFile));
+		StringTokenizer tokens = new StringTokenizer(file.readString());
+		while (tokens.hasMoreTokens()) {
+			String type = tokens.nextToken();
+			if (type.equals("Platform")) {
+				list.add(new Platform(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())));
+			}
+			else if (type.equals("MusicNote")) {
+				MusicNote note = new MusicNote(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken()));
+				list.add(note);
+				enemies.add(note);
+			}
+			else if(type.equals("Collectible")) {
+				list.add(new Collectible (
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())));
+			}
+			else if (type.equals("Wave")) {
+				foreground.add(new Wave(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())));
+			}
+			else if (type.equals("VolumeBar")) {
+				background.add(new VolumeBar(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())));
+			}
+			else if (type.equals("Flag")) {
+				list.add(new FinishFlag(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken())
+				));
+			}
+		}
+		GameScore.totalEnemies = enemies.size();
+	}
 
 	public void setGameOver() {
 		gameOver = true;
@@ -1024,7 +1247,9 @@ public class Game implements ApplicationListener {
 		
 		@Override
 		public void run() {
+			String loadingSong = "";
 			try {
+				loadingSong = mo.getSong();
 				mo.initSelect();
 				initLevel(mo, mo.getFrames(), mo.getNumFrames());
 			} catch (Exception e) {//MatlabConnectionException e) {
@@ -1034,7 +1259,12 @@ public class Game implements ApplicationListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}*/
-			gameSound = Gdx.audio.newSound(Gdx.files.internal(mo.getSong()));
+			for(SongListItem s: songListItems) {
+				if(s.getTitle().equals(loadingSong)) {
+					s.setIsLoaded(true);
+				}
+			}
+			/*gameSound = Gdx.audio.newSound(Gdx.files.internal(mo.getSong()));
 			gameSound.play();
 			
 			camera.position.x = 400;
@@ -1043,7 +1273,7 @@ public class Game implements ApplicationListener {
 			GameScore.reset();
 			updateCamera();
 			Game.getInstance().setGameState(2);
-			mainMenuSound.stop();
+			mainMenuSound.stop();*/
 		}
 		
 		public boolean isDone() {
@@ -1060,11 +1290,17 @@ public class Game implements ApplicationListener {
 		   Gdx.input.getTextInput(new TextInputListener() {
 		              @Override
 		              public void input(String text) {
-						  game.setGameState(0);
-						  SongCacheUtil.refreshCache();
-		                  mo.setSong(text);
-						  thread = new MusicWaitThread(mo);
-						  thread.start();
+		  				  if (!text.contains(".wav"))
+		  					  text = text + ".wav";
+		                  MusicOperator mo = new MusicOperator(cache);
+		            	  mo.setSong(text);
+		                  cache.addLevel(text);
+		                  populateSongList();
+		                  //if(!cache.hasLevel(text)) {
+				  		      if (thread == null) {
+								thread = new MusicWaitThread(mo);
+								thread.start();
+							  }
 		              }
 		         @Override
 		         public void canceled() {
@@ -1078,8 +1314,21 @@ public class Game implements ApplicationListener {
 		songListItems.clear();
 		
 		for(int i = 0; i < cacheList.size(); i++) {
-			songListItems.add(new SongListItem(-360, SONG_LIST_ITEM_Y_OFFSET+(-40*i), cacheList.get(i)));
+			boolean isLoaded = false;
+			if(cache.hasFrameBuiltLevel(cacheList.get(i))) {
+				isLoaded = true;
+			}
+			songListItems.add(new SongListItem(-360, SONG_LIST_ITEM_Y_OFFSET+(-40*i), cacheList.get(i), isLoaded));
 		}
+	}
+	
+	public boolean songIsLoaded(String selectedSong) {
+		for(SongListItem s: songListItems) {
+			if(s.getTitle().equals(selectedSong)) {
+				return s.getIsLoaded();
+			}
+		}
+		return false;
 	}
 
 	public void resetGame() {

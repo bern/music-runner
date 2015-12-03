@@ -3,18 +3,21 @@ package com.sp.game.objects;
 public class SongListItem {
 	private int x;
 	private int y;
+	private boolean isLoaded;
 	private String title;
 	
-	public SongListItem(int x, int y, String title) {
+	public SongListItem(int x, int y, String title, boolean isLoaded) {
 		this.x = x;
 		this.y = y;
 		this.title = title;
+		this.isLoaded = isLoaded;
 	}
 	
 	public SongListItem(String title) {
 		x = 0;
 		y = 0;
 		this.title = title;
+		isLoaded = false;
 	}
 	
 	public int getX() {
@@ -34,5 +37,11 @@ public class SongListItem {
 	}
 	public void setTitle(String title) {
 		this.title = title;
+	}
+	public void setIsLoaded(boolean isLoaded) {
+		this.isLoaded = isLoaded;
+	}
+	public boolean getIsLoaded() {
+		return isLoaded;
 	}
 }
