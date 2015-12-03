@@ -136,6 +136,7 @@ public class Game implements ApplicationListener {
 
 		game = this;
 		cache = new SongCacheUtil();
+		SongCacheUtil.refreshCache();
 		
 		//CREATE TEXTURE MANAGER
 		TextureManager.create();

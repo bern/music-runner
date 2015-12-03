@@ -1,0 +1,27 @@
+Platform 0 0
+Wave 0 48
+Platform 64 0
+Platform 128 0
+Platform 192 0
+Platform 256 0
+Wave 256 48
+Platform 320 0
+Platform 384 0
+Platform 448 0
+Platform 512 0
+Wave 512 48
+Platform 576 0
+Platform 640 0
+Flag 640 64
+Platform 704 0
+Platform 768 0
+Wave 768 48
+Platform 832 0
+Platform 896 0
+Platform 960 0
+Platform 1024 0
+Wave 1024 48
+Platform 1088 0
+Platform 1152 0
+Platform 1216 0
+VolumeBar 0 -200 2
