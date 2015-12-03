@@ -56,6 +56,14 @@ public class SongCacheUtil {
         return false;
     }
     
+    public static boolean hasWavFile(String songName) {
+    	File wavFile = new File(songName);
+    	if(wavFile.exists()) {
+    		return true;
+    	}
+    	return false;
+    }
+    
     public static boolean addLevel(String levelName) {
         //ADDS A LEVEL TO THE CACHE LIST IF IT IS NOT ALREADY PRESENT
         //AND A PROPER WAV FILE EXISTS FOR THE ADDITION
@@ -64,7 +72,7 @@ public class SongCacheUtil {
         File tmpFile = new File(tmp);
         if (!tmpFile.exists())
             return false;
-        if (!hasLevel(levelName)) {
+        if (!hasLevel(levelName)) {	
             try {
                 Writer output = new BufferedWriter(new FileWriter(PATH, true));
                 output.append(levelName + "\n");
