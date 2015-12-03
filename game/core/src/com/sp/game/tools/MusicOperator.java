@@ -19,7 +19,7 @@ public class MusicOperator {
 	
 	public void initSelect()
 	{
-		if(!(cache.hasLevel(song))) {
+		if(!(cache.hasFrameBuiltLevel(song))) {
 			String s = null;
 			numFrames = -1;		
 			ArrayList<Double> frameData = new ArrayList<Double>();
@@ -55,7 +55,6 @@ public class MusicOperator {
 			}
 			
 			doneProcessing = true;
-			cache.addLevel(song);
 		}
 	}
 	

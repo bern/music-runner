@@ -5,10 +5,7 @@ import com.badlogic.gdx.files.FileHandle;
 
 import java.io.*;
 import java.util.ArrayList;
-<<<<<<< HEAD
-=======
 import java.util.List;
->>>>>>> 6e01702834fa1fb8c1e9f502109ec4de7e8dae43
 import java.util.StringTokenizer;
 
 /**
