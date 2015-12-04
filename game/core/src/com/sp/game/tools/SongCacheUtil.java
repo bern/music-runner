@@ -164,7 +164,13 @@ public class SongCacheUtil {
         StringTokenizer tokens = getStringTokenizer();
         while(tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
-            File wav = new File(token + ".wav");
+            File wav = null;
+            if(token.contains(".wav")) {
+            	wav = new File(token);
+            }
+            else {
+            	wav = new File(token + ".wav");
+            }
             File level = new File("levels/" + token + ".txt");
             if (!wav.exists() || !level.exists()) {
                 removeLevel(token);

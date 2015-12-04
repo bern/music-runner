@@ -35,7 +35,7 @@ public class Game implements ApplicationListener {
 	private SpriteBatch batch;				//collection of sprites
 	private Avatar player;					//our player
 	private ArrayList<GameObject> list = new ArrayList<GameObject>();		//game objects  such as enemies
-	private ArrayList<MusicNote> enemies = new ArrayList<MusicNote>();
+	private ArrayList<DefaultEnemy> enemies = new ArrayList<DefaultEnemy>();
 	private ArrayList<GameObject> foreground = new ArrayList<GameObject>();	//foreground objects that move with camera
 	private ArrayList<VolumeBar> background = new ArrayList<VolumeBar>();	//background objects that move slower than camera
 	private ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
@@ -877,10 +877,13 @@ public class Game implements ApplicationListener {
 
 		//Check for projectile collisions.
 		for(Projectile p: projectiles) {
-			for (MusicNote mn: enemies) {
-				if (p.hits(mn.getHitBox()) > 0) {
+			for (DefaultEnemy mn: enemies) {
+				if (p.hits(mn.getHitBox()) > 0){
+					mn.setLife(mn.getLife() - 1);
+					if(mn.getLife() == 0) {
+						deleteList.add(mn);
+					}
 					deleteList.add(p);
-					deleteList.add(mn);
 					GameScore.enemiesShot++;
 					break;
 				}
@@ -889,7 +892,7 @@ public class Game implements ApplicationListener {
 		//any objects that have been "killed" or taken
 		while(!deleteList.isEmpty()) {
 			GameObject obj = deleteList.get(0);
-			if (obj instanceof MusicNote) {
+			if (obj instanceof DefaultEnemy) {
 				enemies.remove(obj);
 			}
 			if (obj instanceof FinishFlag) {
@@ -1135,10 +1138,10 @@ public class Game implements ApplicationListener {
 		}
 	}
 	
-	private void initLevel(MusicOperator mo, double[] frames, double numFrames) {
+	private void initLevel(MusicOperator mo, double[] frames, double[] densities, double numFrames) {
 		//LOAD LEVEL ALGORITHM
 		//builder = new FramesLevelBuilder("gen/framesofinterest3.txt");
-		builder = new FramesLevelBuilder(mo, frames, numFrames, cache);
+		builder = new FramesLevelBuilder(mo, frames, densities, numFrames, cache);
 		System.out.println("Write path: "+builder.getWritePath());
 		FileHandle file = Gdx.files.internal(builder.getWritePath());
 		//System.out.println(file.readString());
@@ -1150,8 +1153,8 @@ public class Game implements ApplicationListener {
 						Integer.parseInt(tokens.nextToken()),
 						Integer.parseInt(tokens.nextToken())));
 			}
-			else if (type.equals("MusicNote")) {
-				MusicNote note = new MusicNote(
+			else if (type.equals("DefaultEnemy")) {
+				SmallEnemy note = new SmallEnemy(
 						Integer.parseInt(tokens.nextToken()),
 						Integer.parseInt(tokens.nextToken()));
 				list.add(note);
@@ -1195,8 +1198,22 @@ public class Game implements ApplicationListener {
 						Integer.parseInt(tokens.nextToken()),
 						Integer.parseInt(tokens.nextToken())));
 			}
-			else if (type.equals("MusicNote")) {
-				MusicNote note = new MusicNote(
+			else if (type.equals("SmallEnemy")) {
+				SmallEnemy note = new SmallEnemy(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken()));
+				list.add(note);
+				enemies.add(note);
+			}
+			else if (type.equals("MediumEnemy")) {
+				SmallEnemy note = new MediumEnemy(
+						Integer.parseInt(tokens.nextToken()),
+						Integer.parseInt(tokens.nextToken()));
+				list.add(note);
+				enemies.add(note);
+			}
+			else if (type.equals("LargeEnemy")) {
+				SmallEnemy note = new LargeEnemy(
 						Integer.parseInt(tokens.nextToken()),
 						Integer.parseInt(tokens.nextToken()));
 				list.add(note);
@@ -1265,7 +1282,14 @@ public class Game implements ApplicationListener {
 			try {
 				loadingSong = mo.getSong();
 				mo.initSelect();
-				initLevel(mo, mo.getFrames(), mo.getNumFrames());
+				builder = new FramesLevelBuilder(
+						mo, 
+						mo.getFrames(), 
+						mo.getDensities(),
+						mo.getNumFrames(),
+						cache
+				);
+				//initLevel(mo, mo.getFrames(), mo.getNumFrames());
 			} catch (Exception e) {//MatlabConnectionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

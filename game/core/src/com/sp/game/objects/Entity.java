@@ -15,6 +15,7 @@ public abstract class Entity extends GameObject implements Movable {
     protected Sprite sprite;
     protected int action;
     protected float velocityY;
+    protected boolean bounce = false;
 
     public int hits(Rectangle r) {
         //returns a status code based on which hitbox is hit
@@ -100,10 +101,33 @@ public abstract class Entity extends GameObject implements Movable {
     public void jump() {
         if (velocityY == 0)
             velocityY = 700;
+        else {
+        	if (!bounce) {
+	        	bounce = true;
+	        	new Thread(new Runnable() {
+	        		@Override
+	        		public void run() {
+	        			try {
+							Thread.sleep(200);
+							bounce = false;
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+	        		}
+	        	}).start();
+        	}
+        }
     }
 
     public void jump(float val) {
-        velocityY = val;
+    	if(!bounce)
+    		velocityY = val;
+    	else  {
+    		velocityY = 500;
+    		bounce = false;
+    	}
     }
 
     public Rectangle getHitBox() {
@@ -117,5 +141,28 @@ public abstract class Entity extends GameObject implements Movable {
     public void resetGravity() {
         velocityY = 0;
     }
+    
+    public int getRows() {
+    	return 1;
+    }
+    
+    public int getColumns() {
+    	return 1;
+    }
+    
+    public float getHeight() {
+    	return sprite.getHeight();
+    }
+    
+    public float getWidth() {
+    	return sprite.getWidth();
+    }
+    
+    public Texture getTexture() {
+    	return texture;
+    }
 
+    public int getAnimLength() {
+    	return 1;
+    }
 }

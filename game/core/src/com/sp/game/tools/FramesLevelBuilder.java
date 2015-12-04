@@ -19,6 +19,7 @@ public class FramesLevelBuilder extends LevelBuilder {
 
     private StringTokenizer tokens;
     private ArrayList<Integer> features;
+    private ArrayList<Integer> densities;
     private int lastFrame;
     private static final int BLOCK_BUFFER_NUM = 60;
     private static final int BLOCK_BUFFER_PIXELS = BLOCK_BUFFER_NUM * 64;
@@ -37,17 +38,25 @@ public class FramesLevelBuilder extends LevelBuilder {
         generateLevel();
     }
     
-    public FramesLevelBuilder(MusicOperator mo, double[] frames, double numFrames, SongCacheUtil cache) {
+    public FramesLevelBuilder(MusicOperator mo, double[] frames, double[] densities, double numFrames, SongCacheUtil cache) {
     	super("levels/"+mo.getSong()+".txt");
     	if((cache.hasFrameBuiltLevel(mo.getSong()))) {
     		this.setWritePath("levels/"+mo.getSong()+".txt");
     		return;
     	}
+    	
     	Integer[] int_features = new Integer[frames.length];
     	for (int i=0; i < frames.length; ++i) {
     		int_features[i] = (int)frames[i];
     	}
     	features = new ArrayList<Integer>(Arrays.asList(int_features));
+    	
+    	Integer[] int_densities = new Integer[frames.length];
+    	for (int i=0; i < densities.length; ++i) {
+    		int_densities[i] = (int)densities[i];
+    	}
+    	this.densities = new ArrayList<Integer>(Arrays.asList(int_densities));
+    	
     	this.setWritePath("levels/"+mo.getSong()+".txt");
     	lastFrame = (int)numFrames;
     	generateLevel();
@@ -95,13 +104,22 @@ public class FramesLevelBuilder extends LevelBuilder {
                 int cur = (int) ((features.get(i) * 400.0) / (44100.0));
                 cur += BLOCK_BUFFER_PIXELS / 2;
                 String string = String.valueOf(cur);
-                if (Math.random() < DifficultyUtility.ENEMY_HARD) {
-                    if (Math.abs(cur - prevLocEnemy) > 100) {
-                        out.write("MusicNote ".getBytes());
+                if (Math.random() < DifficultyUtility.ENEMY_MEDIUM) {
+                    //if (Math.abs(cur - prevLocEnemy) > 100) {
+                        //System.out.println(densities.get(i));
+                    	if(densities.get(i) > 250) {
+                    		out.write("LargeEnemy ".getBytes());
+                    	}
+                    	else if(densities.get(i) > 100) {
+                    		out.write("MediumEnemy ".getBytes());
+                    	}
+                    	else {
+                    		out.write("SmallEnemy ".getBytes());
+                    	}
                         out.write(string.getBytes());
                         out.write(" 64\n".getBytes());
                         prevLocEnemy = cur;
-                    }
+                    //}
                 }
                 else if(Math.random() < DifficultyUtility.COLLECTIBLE_EASY) {
                     if (Math.abs(cur - prevLocCollectible) > 100) {

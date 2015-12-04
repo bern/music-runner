@@ -8,6 +8,7 @@ import java.io.*;
 public class MusicOperator {
 
 	private double[] frames;
+	private double[] densities;
 	private double numFrames = 0;
 	private boolean doneProcessing = false;
 	private String song;
@@ -50,8 +51,10 @@ public class MusicOperator {
 			}
 			
 			frames = new double[frameData.size()];
+			densities = new double[frameData.size()];
 			for(int i = 0; i < frameData.size(); i++) {
 				frames[i] = frameData.get(i);
+				densities[i] = frameDensity.get(i);
 			}
 			
 			doneProcessing = true;
@@ -64,6 +67,10 @@ public class MusicOperator {
 	
 	public double[] getFrames() {
 		return frames;
+	}
+	
+	public double[] getDensities() {
+		return densities;
 	}
 	
 	public double getNumFrames() {

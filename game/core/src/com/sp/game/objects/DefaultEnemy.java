@@ -10,13 +10,17 @@ import com.sp.game.tools.TextureManager;
 /**
  * Created by Troy on 10/16/2015.
  */
-public class MusicNote extends Entity {
+public class DefaultEnemy extends Entity {
 
     protected Rectangle hitBox;
     protected Texture texture;
     protected Sprite sprite;
+    protected int life = 1;
 
-    public MusicNote(int x, int y) {
+    public DefaultEnemy() {
+    }
+    
+    public DefaultEnemy(int x, int y) {
         hitBox = new Rectangle(x, y, 128, 128);
         sprite = new Sprite(TextureManager.musicNote, 0, 0, 128, 128);
         setPosition(x,y);
@@ -57,5 +61,13 @@ public class MusicNote extends Entity {
     @Override
     public int hitAction(int side) {
         return 2;   //insta death
+    }
+    
+    public int getLife() {
+    	return life;
+    }
+    
+    public void setLife(int life) {
+    	this.life = life;
     }
 }

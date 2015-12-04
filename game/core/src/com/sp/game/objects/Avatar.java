@@ -22,7 +22,8 @@ public class Avatar extends Entity {
 
     private int collectibles = 0;
     private int lives = 5;
-    private int ammo = 5;
+    private final int INITIAL_AMMO_COUNT = 10;
+    private int ammo = INITIAL_AMMO_COUNT;
 
     //Avatar animation init
     private Animation runAnimation;
@@ -154,7 +155,7 @@ public class Avatar extends Entity {
                 e.printStackTrace();
             }
             reloading = false;
-            ammo = 5;
+            ammo = INITIAL_AMMO_COUNT;
         }
     }
 
@@ -164,7 +165,7 @@ public class Avatar extends Entity {
         @Override
         public void run() {
             try {
-                Thread.sleep(200);
+                Thread.sleep(150);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

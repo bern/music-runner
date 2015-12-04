@@ -22,7 +22,10 @@ public class TextureManager {
     public static Texture projectile;
     public static Texture avatarSprites;
     public static Texture flag;
-
+    public static Texture smallEnemy;
+    public static Texture mediumEnemy;
+    public static Texture largeEnemy;
+    
     public static void create() {
         platform = new Texture(Gdx.files.internal("img/platform_square_cont64.png"));
         collectible = new Texture(Gdx.files.internal("img/headphones.png"));
@@ -35,6 +38,9 @@ public class TextureManager {
         projectile = new Texture(Gdx.files.internal("img/projectile.png"));
         avatarSprites = new Texture(Gdx.files.internal("img/hero_sprites.png"));
         flag = new Texture(Gdx.files.internal("img/flag.png"));
+        smallEnemy = new Texture(Gdx.files.internal("img/robot64100.png"));
+        mediumEnemy = new Texture(Gdx.files.internal("img/robot100150.png"));
+        largeEnemy = new Texture(Gdx.files.internal("img/robot165175.png"));
     }
 
     public static void dispose() {
@@ -49,6 +55,9 @@ public class TextureManager {
         projectile.dispose();
         avatarSprites.dispose();
         flag.dispose();
+        smallEnemy.dispose();
+        mediumEnemy.dispose();
+        largeEnemy.dispose();
     }
 
 
