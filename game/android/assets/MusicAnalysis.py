@@ -47,7 +47,6 @@ def analyze():
 
 	for x in range(0, len(frameVec)-1):
 	    print(frameVec[x])
-	    #print(featureVal[x])
 	    print(densityVec[x])
 
 	return numFrames
