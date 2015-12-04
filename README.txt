@@ -52,8 +52,11 @@ This program runs on Windows 7 or later.
 You must have the latest version of Java to run Music Runner.
 
 Additionally, if you wish to generate levels, you must have
-Python installed in your PATH variable. Otherwise, the only 
+Anaconda Python installed in your PATH variable. Otherwise, the only 
 levels you can play are the pre-generated ones.
+
+Anaconda Python can be found below:
+https://www.continuum.io/downloads
 
 
 ===============================================
@@ -65,6 +68,18 @@ levels you can play are the pre-generated ones.
 To run music runner, navigate to the project directory. Then, navigate to
 game\android\assets\app. You may run the "Music Runner" shortcut to launch 
 the game. You may move this shortcut anywhere (for instance, to the Desktop).
+
+===============================================
+
+~~~~~~~~~ COMPILING MUSIC RUNNER ~~~~~~~~~~~~~~
+
+===============================================
+
+The only file that needs to be compiled to create the Desktop application
+is desktop/src/com/sp/game/desktop/DesktopLauncher.java and all its
+dependencies (located in the core/src folder). LibGDX must be installed,
+Python must be configured to run on the PATH variable, and SciPy and
+NumPy must be included in the project (or use Anaconda Python).
 
 
 
@@ -84,6 +99,8 @@ the game. You may move this shortcut anywhere (for instance, to the Desktop).
   1. Play Song
 	- Any songs you have loaded will appear here. Initially, this will only contain
 	demo songs. Upload your own for more!
+	- Tip: If you just want a taste of Music Runner, the demo song "Demo"
+	is only 10 seconds long!
 
   2. Song Manager
 	- This lets you add or remove songs. To add a song, click "Add". Enter
