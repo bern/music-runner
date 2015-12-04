@@ -1,0 +1,1 @@
+java -cp desktop.jar com.sp.game.desktop.DesktopLauncher

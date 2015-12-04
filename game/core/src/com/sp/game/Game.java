@@ -575,7 +575,7 @@ public class Game implements ApplicationListener {
 					@Override
 					public void run() {
 						try {
-							Thread.sleep(2350);
+							Thread.sleep(3950);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
@@ -971,6 +971,11 @@ public class Game implements ApplicationListener {
 			player.moveRight(Gdx.graphics.getDeltaTime());
 			for (VolumeBar v: background)
 				v.moveRight(Gdx.graphics.getDeltaTime());
+		}
+
+		//ERROR CHECK
+		if (player.getHitBox().getY() < 0) {
+			player.setPosition(player.getHitBox().getX(), 200);
 		}
 
 		updateCamera();
