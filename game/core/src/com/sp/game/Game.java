@@ -769,7 +769,7 @@ public class Game implements ApplicationListener {
 		welcome.draw(batch, "Welcome to Music Runner", 400, 350);
 		welcome.draw(batch, "Current song: " + selectedSong, 1100, 350);
 		welcome.draw(batch, "Good luck!", 1100, 250);
-		lives.draw(batch, "Lives: " + player.getLives(), player.getHitBox().getX() - 20, 450);
+		lives.draw(batch, "Health: " + player.getLives(), player.getHitBox().getX() - 20, 450);
 		lives.draw(batch, "Coins: " + player.getCollectibles(), player.getHitBox().getX() + 280, 450);
 		lives.draw(batch, "Ammo: " + player.getAmmo(), player.getHitBox().getX() + 580, 450);
 
@@ -1110,8 +1110,8 @@ public class Game implements ApplicationListener {
 			stats.draw(batch, "Accuracy: 0%", -360, -120);
 		stats.draw(batch, "Bounce streak: " + GameScore.bounceStreak, -360, -150);
 
-		stats.draw(batch, "Lives lost: " + GameScore.livesLost, 0, 0);
-		stats.draw(batch, "Lives gained: " + GameScore.livesGained, 0, -30);
+		stats.draw(batch, "Health lost: " + GameScore.livesLost, 0, 0);
+		stats.draw(batch, "Health gained: " + GameScore.livesGained, 0, -30);
 		stats.draw(batch, "TOTAL SCORE: " + (GameScore.coinsCollected * 10
 			+ (GameScore.enemiesShot + GameScore.enemiesStomped) * 10
 			+ (100 * GameScore.enemiesShot / (GameScore.shotsFired  + 1)) * (GameScore.shotsFired / 10)
