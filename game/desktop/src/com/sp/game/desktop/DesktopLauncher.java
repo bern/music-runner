@@ -20,15 +20,15 @@ public class DesktopLauncher {
 			new LwjglApplication(new Game(), config);
 		}
 		catch(Exception e) {
-//			FileOutputStream fos = null;
-//			try {
-//				fos = new FileOutputStream(new File("exception.txt"), true);
-//			} catch (FileNotFoundException e1) {
-//				e1.printStackTrace();
-//			}
-//			PrintStream ps = new PrintStream(fos);
-//			e.printStackTrace(ps);
-			e.printStackTrace();
+			FileOutputStream fos = null;
+			try {
+				fos = new FileOutputStream(new File("exception.txt"), true);
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
+			PrintStream ps = new PrintStream(fos);
+			e.printStackTrace(ps);
+//			e.printStackTrace();
 		}
 	}
 }
