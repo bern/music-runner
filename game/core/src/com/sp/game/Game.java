@@ -560,7 +560,7 @@ public class Game implements ApplicationListener {
 			else if(touch.overlaps(songSelectGo) && !(selectedSong.equals("")) && songIsLoaded(selectedSong)) {
 				System.out.println(selectedSong);
 				mainMenuSound.stop();
-				gameSound = Gdx.audio.newSound(Gdx.files.internal(selectedSong));
+				gameSound = Gdx.audio.newSound(Gdx.files.internal("songs/"+selectedSong));
 				
 				camera.position.x = 400;
 				camera.position.y = 240;

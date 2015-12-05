@@ -35,13 +35,7 @@ public class SongCacheUtil {
         while(tokens.hasMoreTokens()) {
             String token = tokens.nextToken();
             if(token.equals(levelName)) {
-                String tmpPath;
-                if (!levelName.contains(".wav"))
-                    tmpPath = levelName + ".wav";
-                else
-                    tmpPath = levelName;
-                File file = new File(tmpPath);
-                if (file.exists())
+                if (hasWavFile(levelName))
                     return true;
             }
         }
@@ -57,7 +51,8 @@ public class SongCacheUtil {
     }
     
     public static boolean hasWavFile(String songName) {
-    	File wavFile = new File(songName);
+    	songName += songName.contains(".wav") ? "" : ".wav";
+    	File wavFile = new File("songs/"+songName);
     	if(wavFile.exists()) {
     		return true;
     	}
@@ -67,10 +62,7 @@ public class SongCacheUtil {
     public static boolean addLevel(String levelName) {
         //ADDS A LEVEL TO THE CACHE LIST IF IT IS NOT ALREADY PRESENT
         //AND A PROPER WAV FILE EXISTS FOR THE ADDITION
-        String tmp = levelName;
-        tmp += tmp.contains(".wav") ? "":  ".wav";
-        File tmpFile = new File(tmp);
-        if (!tmpFile.exists())
+        if (!hasWavFile(levelName))
             return false;
         if (!hasLevel(levelName)) {	
             try {
@@ -166,10 +158,10 @@ public class SongCacheUtil {
             String token = tokens.nextToken();
             File wav = null;
             if(token.contains(".wav")) {
-            	wav = new File(token);
+            	wav = new File("songs/"+token);
             }
             else {
-            	wav = new File(token + ".wav");
+            	wav = new File("songs/"+token + ".wav");
             }
             File level = new File("levels/" + token + ".txt");
             if (!wav.exists() || !level.exists()) {
