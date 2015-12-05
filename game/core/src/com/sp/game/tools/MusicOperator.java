@@ -27,7 +27,7 @@ public class MusicOperator {
 			ArrayList<Integer> frameDensity = new ArrayList<Integer>();
 			
 			try {
-				Process p = Runtime.getRuntime().exec("python MusicAnalysis.py "+song);
+				Process p = Runtime.getRuntime().exec("python MusicAnalysis.py songs/"+song);
 				BufferedReader stdInput = new BufferedReader(new
 	                 InputStreamReader(p.getInputStream()));
 	 
